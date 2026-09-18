@@ -48,7 +48,7 @@ Base path: `/api/v1/`. Endpoint berikut berbentuk read-only dan mengembalikan de
 
 ## Gap kontrak yang perlu diselesaikan
 
-- Filter resilience per company dan evidence dengan `entity_id` yang tepat.
+- Filter resilience per company dan exact `entity_id`/`metric_name` pada evidence sudah tersedia. Endpoint `companies/{id}/intelligence/?commodity=CODE` menampilkan evidence company dan commodity terpisah dengan status `pending_data_audit`; skor tetap `null` sampai audit dan validasi. Ini bukan klaim keterkaitan kausal antar-observasi.
 - Relasi driver/exposure ke normalized metric dan provenance.
 - Penanda data demo vs data aktual pada response.
 - Endpoint submit/run scenario setelah metodologi dan validasi input disepakati.

@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from apps.commodities.models import Commodity
 from apps.companies.models import Company, CompanyCommodityExposure, CompanyResilience
+from apps.evidence.models import RawDataLog, NormalizedMetric
 
 
 class CompanyApiTests(TestCase):
@@ -71,3 +72,18 @@ class CompanyApiTests(TestCase):
         self.assertIsNone(exposure['revenue_share_pct'])
         self.assertIsNone(exposure['exposure_score'])
         self.assertIsNone(resilience['resilience_score'])
+
+    def test_intelligence_is_evidence_first_and_unvalidated(self):
+        log = RawDataLog.objects.create(source='Sectors', endpoint='/company', status_code=200)
+        NormalizedMetric.objects.create(
+            metric_name='Revenue', definition='Revenue', entity_type='Company',
+            entity_id=self.company.ticker, source='Sectors', frequency='Annual', unit='IDR',
+            observation_date='2025-12-31', value=100, raw_data_ref=log,
+        )
+        response = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=COAL')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status'], 'pending_data_audit')
+        self.assertIsNone(response.data['exposure_score'])
+        self.assertEqual(len(response.data['company_evidence']), 1)
+        self.assertEqual(response.data['commodity_evidence'], [])
+        self.assertEqual(self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/').status_code, 400)
