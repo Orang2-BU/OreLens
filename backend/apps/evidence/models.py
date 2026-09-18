@@ -1,4 +1,5 @@
 from django.db import models
+from apps.commodities.models import Commodity
 
 
 class RawDataLog(models.Model):
@@ -43,6 +44,7 @@ class NormalizedMetric(models.Model):
     definition = models.TextField()
     entity_type = models.CharField(max_length=20, choices=EntityType.choices, default=EntityType.COMMODITY)
     entity_id = models.CharField(max_length=50, help_text='Code or Symbol e.g. COAL or ADRO.JK')
+    commodity = models.ForeignKey(Commodity, null=True, blank=True, on_delete=models.SET_NULL, help_text='Required for company metrics scoped to one commodity')
     source = models.CharField(max_length=50)
     frequency = models.CharField(max_length=30, help_text='Daily, Monthly, Quarterly, Annual')
     unit = models.CharField(max_length=50)

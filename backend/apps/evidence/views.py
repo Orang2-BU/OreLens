@@ -26,7 +26,7 @@ class NormalizedMetricViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = NormalizedMetric.objects.all()
     serializer_class = NormalizedMetricSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['entity_type', 'entity_id', 'metric_name', 'source', 'priority', 'confidence', 'is_proxy']
+    filterset_fields = ['entity_type', 'entity_id', 'commodity', 'metric_name', 'source', 'priority', 'confidence', 'is_proxy']
     search_fields = ['metric_name', 'entity_id']
     ordering_fields = ['observation_date', 'value']
     ordering = ['-observation_date']

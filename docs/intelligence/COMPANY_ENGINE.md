@@ -18,4 +18,4 @@ Bandingkan revenue/growth, net income, ROE/margin, DER, PE/PB, serta data operas
 
 ## Status implementasi
 
-Model saat ini menyimpan company, commodity exposure, dan resilience; endpoint baca tersedia. Seed memuat nilai exposure/resilience contoh dan `scoring_status = Pending Validation`. Belum ada perhitungan berbasis data audited atau company beta. Kontrak yang dibutuhkan frontend ada di [API Architecture](../data/API_ARCHITECTURE.md).
+Endpoint `companies/{id}/intelligence/?commodity=CODE` kini menyajikan snapshot evidence-first: exposure per komoditas (revenue share lalu proxy production/sales), komponen resilience, dan fundamental. `NormalizedMetric.commodity` membedakan metric perusahaan yang spesifik komoditas; metric umum boleh tanpa commodity. Hanya observasi dengan raw log HTTP 200 yang masuk snapshot. Nilai, unit, tanggal, sumber, confidence, proxy, dan evidence ID tampil; missing tetap null. Production/sales dependency adalah proxy ber-confidence analisis Low. Semua score gabungan tetap null. Seed pada model legacy masih contoh dan tidak digunakan snapshot. Driver map berbasis data aktual, peer comparison, beta, serta bobot tervalidasi belum ada.

@@ -2,6 +2,7 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Company, CompanyCommodityExposure, CompanyResilience
@@ -9,6 +10,7 @@ from .serializers import CompanySerializer, CompanyCommodityExposureSerializer, 
 from apps.commodities.models import Commodity
 from apps.evidence.models import NormalizedMetric
 from apps.evidence.serializers import NormalizedMetricSerializer
+from apps.intelligence.company_snapshot import build_company_snapshot
 
 
 @extend_schema_view(
@@ -36,23 +38,22 @@ class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
             entity_id=company.ticker,
             raw_data_ref__isnull=False,
             raw_data_ref__status_code=200,
-        ).order_by('-observation_date')[:20]
+        ).filter(Q(commodity=commodity) | Q(commodity__isnull=True)).order_by('-observation_date')[:20]
         commodity_observations = NormalizedMetric.objects.filter(
             entity_type=NormalizedMetric.EntityType.COMMODITY,
             entity_id=commodity.code,
             raw_data_ref__isnull=False,
             raw_data_ref__status_code=200,
         ).order_by('-observation_date')[:20]
-        exposure = CompanyCommodityExposure.objects.filter(company=company, commodity=commodity).first()
         return Response({
             'company': company.ticker,
             'commodity': commodity.code,
             'status': 'pending_data_audit',
-            'exposure_revenue_share_pct': exposure.revenue_share_pct if exposure else None,
             'exposure_score': None,
             'resilience_score': None,
             'company_evidence': NormalizedMetricSerializer(company_observations, many=True).data,
             'commodity_evidence': NormalizedMetricSerializer(commodity_observations, many=True).data,
+            **build_company_snapshot(company, commodity),
         })
 
 

@@ -22,10 +22,11 @@ Selesai bila observasi nyata dapat ditelusuri sampai response sumber dan audit m
 
 ## Tahap 3 — company/commodity intelligence
 
-- [ ] Exposure per komoditas: revenue share bila tersedia; proxy production/sales diberi confidence lebih rendah. Missing tetap `null`, bukan nol.
-- [ ] Resilience terpisah: reserve coverage, stabilitas produksi, diversifikasi, leverage, profitabilitas; tampilkan komponen dan evidence, jangan gunakan angka seed sebagai score final.
+- [x] Read path exposure per komoditas: hanya observasi ber-provenance dan terhubung ke komoditas; revenue share diprioritaskan, production/sales dependency diberi label proxy dan confidence analisis Low. Missing tetap `null`. Skor numerik final belum dihitung.
+- [x] Read path resilience terpisah: komponen reserve coverage, stabilitas produksi, diversifikasi, DER, ROE ditampilkan bila ada evidence; score tetap `null`.
 - [ ] Commodity driver map: supply, demand, macro, event/policy dengan arah sebagai hipotesis sampai diuji.
-- [ ] Fundamental comparison dalam peer group yang valid, dengan periode dan unit yang sebanding.
+- [x] Snapshot fundamental per perusahaan dari metric Revenue Growth, Net Income Growth, ROE, DER, PE, PB ber-provenance; missing `null`.
+- [ ] Fundamental comparison dalam peer group yang valid, dengan periode dan unit yang sebanding. Snapshot saat ini belum melakukan peer comparison.
 
 Selesai bila setiap insight memiliki input, periode, sumber, confidence, status proxy, dan alasan saat unavailable.
 

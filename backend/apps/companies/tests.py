@@ -87,3 +87,26 @@ class CompanyApiTests(TestCase):
         self.assertEqual(len(response.data['company_evidence']), 1)
         self.assertEqual(response.data['commodity_evidence'], [])
         self.assertEqual(self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/').status_code, 400)
+
+    def test_intelligence_exposure_is_commodity_scoped_and_missing_is_not_zero(self):
+        nickel = Commodity.objects.create(code='NICKEL', name='Nickel', benchmark_unit='USD/mt')
+        log = RawDataLog.objects.create(source='Sectors', endpoint='/company', status_code=200)
+        for commodity, name, value in [
+            (nickel, 'Commodity Revenue Share', 80),
+            (self.commodity, 'Production Dependency', 60),
+        ]:
+            NormalizedMetric.objects.create(
+                metric_name=name, definition=name, entity_type='Company',
+                entity_id=self.company.ticker, commodity=commodity, source='Sectors',
+                frequency='Annual', unit='%', observation_date='2025-12-31',
+                value=value, raw_data_ref=log,
+            )
+        coal = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=COAL').data
+        self.assertEqual(coal['exposure']['basis'], 'Production Dependency')
+        self.assertEqual(coal['exposure']['analysis_confidence'], 'Low')
+        self.assertTrue(coal['exposure']['proxy_used'])
+        self.assertIsNone(coal['exposure']['score'])
+        self.assertIsNone(coal['resilience']['components']['Reserve Coverage'])
+        nickel_data = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=NICKEL').data
+        self.assertEqual(nickel_data['exposure']['basis'], 'Commodity Revenue Share')
+        self.assertEqual(float(nickel_data['exposure']['observation']['value']), 80)
