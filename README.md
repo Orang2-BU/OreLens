@@ -6,6 +6,8 @@ Fondasi workspace React tersedia di `frontend/`. Jalankan `npm ci` lalu `npm run
 
 OreLens - Commodity and Company Intelligence Platform untuk Sectors Hackathon.
 
+Stack direction: Next.js + TypeScript, Django + Django REST Framework, PostgreSQL, and DuckDB + Parquet for historical quant workloads. See [technical architecture](docs/TECHNICAL_ARCHITECTURE.md).
+
 ## Structure
 
 ```

@@ -5,6 +5,9 @@
 ### Backend
 
 - Set up the project.
+- Use Django and Django REST Framework as the backend foundation.
+- Keep application state in PostgreSQL when the project moves beyond the SQLite MVP.
+- Keep historical and quant workloads in DuckDB and Parquet.
 - Create clients for Sectors, World Bank, FRED, UN Comtrade, and EIA.
 - Add raw-data storage or cache.
 - Define a common normalized data schema.

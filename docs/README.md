@@ -10,6 +10,7 @@ This documentation is derived from the approved discussion in **Memahami Hackath
 - [MVP Scope](./MVP_SCOPE.md) — what can be built now and what remains pending.
 - [Data Dictionary](./DATA_DICTIONARY.md) — approved metric definitions and data-source plan.
 - [Data Availability Audit](./DATA_AVAILABILITY_AUDIT.md) — audit template for validating real API coverage.
+- [Technical Architecture](./TECHNICAL_ARCHITECTURE.md) — backend, storage, analytics, integration, and infrastructure decisions.
 
 ## Current status
 
