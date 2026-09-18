@@ -30,6 +30,9 @@ class ScenarioInput(models.Model):
     adjustment_pct = models.FloatField(help_text='Percentage change applied')
     notes = models.TextField(blank=True)
 
+    class Meta:
+        ordering = ['id']
+
     def __str__(self):
         return f"{self.scenario.name} - {self.driver_name}: {self.original_value} → {self.adjusted_value}"
 
@@ -43,6 +46,9 @@ class ScenarioResult(models.Model):
     methodology = models.CharField(max_length=100, default='Sensitivity Analysis (Preliminary)')
     computed_at = models.DateTimeField(auto_now=True)
     warnings = models.TextField(blank=True, help_text='Caveats about score pending validation')
+
+    class Meta:
+        ordering = ['-computed_at']
 
     def __str__(self):
         return f"Result: {self.scenario.name} - {self.estimated_price_impact_pct}% impact"

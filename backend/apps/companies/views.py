@@ -40,5 +40,6 @@ class CompanyResilienceViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CompanyResilience.objects.all()
     serializer_class = CompanyResilienceSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['company']
     ordering_fields = ['resilience_score', 'debt_to_equity', 'free_cash_flow']
     ordering = ['-resilience_score']

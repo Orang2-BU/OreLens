@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-$p8h3*0==2d7chskm^3oj*igo0%!d4jmz*_94lhhcg%rm6@v-#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']  # ponytail: restrict to specific domains in production
 
 
 # Application definition
@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'apps.evidence',
     'apps.scenarios',
     'apps.integrations',
+    'apps.analytics',
+    'apps.intelligence',
 ]
 
 MIDDLEWARE = [

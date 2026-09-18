@@ -1,3 +1,61 @@
 from django.test import TestCase
+from rest_framework.test import APIClient
+from rest_framework import status
+from apps.commodities.models import Commodity
+from apps.companies.models import Company, CompanyCommodityExposure, CompanyResilience
 
-# Create your tests here.
+
+class CompanyApiTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.commodity = Commodity.objects.create(
+            code='COAL',
+            name='Thermal Coal',
+            category=Commodity.Category.ENERGY,
+            benchmark_unit='USD/mt',
+            current_price=138.50
+        )
+        self.company = Company.objects.create(
+            ticker='ADRO.JK',
+            name='Adaro Energy Indonesia Tbk',
+            sector='Energy & Basic Materials',
+            sub_industry='Thermal Coal Mining',
+            market_cap=80000000000000.00
+        )
+        self.exposure = CompanyCommodityExposure.objects.create(
+            company=self.company,
+            commodity=self.commodity,
+            revenue_share_pct=85.0,
+            exposure_score=85.0
+        )
+        self.resilience = CompanyResilience.objects.create(
+            company=self.company,
+            debt_to_equity=0.3,
+            current_ratio=1.5,
+            ebitda_margin=35.0,
+            resilience_score=80.0,
+            scoring_status='Pending Validation',
+            as_of_date='2025-12-31'
+        )
+
+    def test_list_companies(self):
+        response = self.client.get('/api/v1/companies/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['ticker'], 'ADRO.JK')
+
+    def test_get_company_detail(self):
+        response = self.client.get(f'/api/v1/companies/{self.company.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['ticker'], 'ADRO.JK')
+
+    def test_list_exposures(self):
+        response = self.client.get('/api/v1/company-exposures/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+
+    def test_filter_resilience_by_company(self):
+        response = self.client.get(f'/api/v1/company-resilience/?company={self.company.id}')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['count'], 1)
+        self.assertEqual(response.data['results'][0]['resilience_score'], 80.0)

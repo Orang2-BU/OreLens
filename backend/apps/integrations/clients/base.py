@@ -9,6 +9,17 @@ class BaseApiClient:
         self.base_url = base_url.rstrip('/')
         self.api_key = api_key or os.getenv(f"{source_name.upper().replace(' ', '_')}_API_KEY", "")
 
+    def _sanitize_params(self, params: dict) -> dict:
+        """Remove sensitive keys from params before logging."""
+        if not params:
+            return {}
+        sanitized = params.copy()
+        sensitive_keys = ['api_key', 'apikey', 'token', 'secret', 'password', 'authorization']
+        for key in list(sanitized.keys()):
+            if key.lower() in sensitive_keys:
+                sanitized[key] = '***REDACTED***'
+        return sanitized
+
     def _get(self, endpoint: str, params: dict = None, headers: dict = None) -> dict:
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         params = params or {}
@@ -25,12 +36,13 @@ class BaseApiClient:
             status_code = 500
             data = {"error": str(e)}
 
-        # Preserve raw response as per data rules
+        # Preserve raw response as per data rules (sanitize credentials)
         try:
+            sanitized_params = self._sanitize_params(params)
             RawDataLog.objects.create(
                 source=self.source_name,
                 endpoint=endpoint,
-                request_params=params,
+                request_params=sanitized_params,
                 response_payload=data if isinstance(data, dict) else {"data": data},
                 status_code=status_code
             )
