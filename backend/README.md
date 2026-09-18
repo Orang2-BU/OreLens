@@ -172,7 +172,7 @@ python manage.py test
 ✅ Sample data seeded (Coal, Gold, Nickel, Copper + 5 companies)  
 ✅ Admin panel  
 
-⏳ Pending (sesuai MVP_SCOPE.md):
+⏳ Pending (sesuai [MVP_SCOPE.md](../docs/product/MVP_SCOPE.md)):
 - Actual API availability audit execution
 - Historical data collection & normalization pipeline
 - Correlation screening & regression analysis

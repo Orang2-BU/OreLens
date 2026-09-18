@@ -1,26 +1,32 @@
-# OreLens Documentation
+# Dokumentasi OreLens
 
-OreLens is a commodity and company intelligence product for the Sectors hackathon.
+OreLens menghubungkan lingkungan komoditas dengan exposure, resilience, fundamentals, evidence, dan scenario perusahaan tambang. Dokumen ini dibagi menurut kebutuhan tim. "Target" adalah keputusan produk/arsitektur; "tersedia" berarti ada implementasi di repo; "menunggu audit" berarti belum dibuktikan dengan data API nyata.
 
-This documentation is derived from the approved discussion in **Memahami Hackathon Sectors**. It intentionally separates product scope, data definitions, and implementation boundaries.
+## Product
 
-## Documents
+- [PRD](product/PRD.md) — tujuan, pengguna, alur, dan kriteria keberhasilan.
+- [MVP Scope](product/MVP_SCOPE.md) — batas pekerjaan dan yang ditunda.
+- [UI Flow](product/UI_FLOW.md) — halaman, navigasi, dan state.
 
-- [PRD](./PRD.md) — product direction and MVP requirements.
-- [MVP Scope](./MVP_SCOPE.md) — what can be built now and what remains pending.
-- [Data Dictionary](./DATA_DICTIONARY.md) — approved metric definitions and data-source plan.
-- [Data Availability Audit](./DATA_AVAILABILITY_AUDIT.md) — audit template for validating real API coverage.
-- [Technical Architecture](./TECHNICAL_ARCHITECTURE.md) — backend, storage, analytics, integration, and infrastructure decisions.
+## Data dan API
 
-## Current status
+- [Data Dictionary](data/DATA_DICTIONARY.md) — naskah metric lengkap v0.1 dari Product/Quant.
+- [Data Availability Audit](data/DATA_AVAILABILITY_AUDIT.md) — template; **hasil audit aktual belum tersedia**.
+- [API Architecture](data/API_ARCHITECTURE.md) — sumber, alur data, kontrak API saat ini, dan gap.
+- [Technical Architecture](data/TECHNICAL_ARCHITECTURE.md) — keputusan stack dan pembagian storage.
 
-| Area | Status |
-|---|---|
-| Product concept | Approved |
-| Commodity scope | Approved |
-| Architecture | Approved |
-| Data sources | Selected |
-| Metric dictionary | Approved |
-| Scoring methodology | Pending validation |
-| Data availability audit | Pending |
-| Implementation | Ready to start |
+## Intelligence
+
+- [Commodity Engine](intelligence/COMMODITY_ENGINE.md) — drivers per komoditas.
+- [Company Engine](intelligence/COMPANY_ENGINE.md) — exposure, resilience, dan fundamentals.
+- [Quant Methodology](intelligence/QUANT_METHODOLOGY.md) — riset historis sebelum weighting.
+- [Scenario Engine](intelligence/SCENARIO_ENGINE.md) — input, output, dan batasan.
+
+## Research dan submission
+
+- [Research References](research/RESEARCH_REFERENCES.md) — register sumber yang masih perlu diverifikasi.
+- [Hackathon Submission](research/HACKATHON_SUBMISSION.md) — checklist kerja; aturan resmi belum dilampirkan.
+
+## Kondisi repo saat ini
+
+Backend Django/DRF memiliki model, migration, endpoint baca, client sumber data dasar, dan seed demo. Frontend React/Vite baru memiliki layout dan navigasi FE-01; halaman analisis masih placeholder. Seed berisi nilai contoh, termasuk histori harga yang dibuat acak; nilainya bukan hasil audit. Scoring, pipeline normalisasi historis, dan scenario engine belum tervalidasi. Stack target Next.js, PostgreSQL, DuckDB/Parquet masih berbeda dari implementasi React/Vite dan SQLite saat ini.

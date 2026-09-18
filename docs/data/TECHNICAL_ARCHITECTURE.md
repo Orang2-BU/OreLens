@@ -1,5 +1,7 @@
 # OreLens — Technical Architecture
 
+Status: arah arsitektur; lihat bagian migration notes untuk membedakan target dari implementasi.
+
 ## Architecture decision
 
 OreLens menggunakan Django dan Django REST Framework sebagai backend utama. Pilihan ini sesuai dengan kebutuhan aplikasi data yang memiliki banyak domain object, persistence, internal audit, dan admin panel.
@@ -16,7 +18,7 @@ FastAPI tidak digunakan sebagai backend utama karena kebutuhan OreLens lebih dek
 ## System layout
 
 ```text
-Next.js + TypeScript
+Next.js + TypeScript (target; saat ini React + Vite)
           │
           ▼
 Django + Django REST Framework
@@ -27,9 +29,9 @@ Django + Django REST Framework
           ├── Resilience Engine
           └── Scenario Engine
           │
-          ├── PostgreSQL
+          ├── PostgreSQL (target; saat ini SQLite)
           │
-          └── DuckDB + Parquet
+          └── DuckDB + Parquet (target)
 ```
 
 ## Storage responsibilities

@@ -1,6 +1,10 @@
 # OreLens — Data Availability Audit v0.1
 
+Status: template; audit API nyata belum dilakukan. Record contoh dari seed tidak dianggap hasil audit.
+
 This audit validates whether the approved metrics can be obtained from real APIs before the scoring engine is finalized.
+
+Status: template audit, belum berisi hasil verifikasi API. Data pada `seed_sample_data` adalah contoh dan tidak boleh diperlakukan sebagai coverage nyata.
 
 ## Required fields
 
@@ -21,6 +25,12 @@ For each metric, record:
 | Proxy required | Whether a proxy is needed |
 | Cost/rate limit | Access and request constraints |
 | Notes | Caveats and transformation details |
+| Observation count | Jumlah observasi aktual |
+| Missing count/rate | Jumlah dan proporsi periode kosong |
+| Last updated | Waktu data terakhir berubah di sumber |
+| License | Hak pakai dan atribusi sumber |
+
+Gunakan `metric_id` yang stabil dan catat commodity/country bila berlaku, sesuai [Data Dictionary](DATA_DICTIONARY.md). Catat tanggal akses dan contoh response yang dapat ditelusuri. Isi `TBD` jika belum diperiksa; jangan menyimpulkan `available` dari keberadaan client atau seed.
 
 ## Initial audit scope
 
