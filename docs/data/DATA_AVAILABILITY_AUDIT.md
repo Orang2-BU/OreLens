@@ -35,6 +35,10 @@ No production scoring should be finalized before this audit is substantially com
 
 ## 3. Required Audit Fields
 
+### Verified live sample — China GDP Growth
+
+Checked 2026-09-18 via `https://api.worldbank.org/v2/country/CHN/indicator/NY.GDP.MKTP.KD.ZG?format=json&date=2015%3A2025` (World Bank API). HTTP 200; 11 annual rows, 2015–2025; 0 null values (0/11); unit `%` (GDP growth, annual %); response `lastupdated: 2026-07-13`. Normalized as `Macro / CHN / China GDP Growth`, observation date at year-end, with raw-response reference. This is contextual demand evidence for Coal/Nickel/Copper, not commodity-specific causal evidence. License, precise rate limit, and analytics readiness remain unverified; no scoring weight is approved. Repeat ingest keeps 11 observations. Run: `cd backend && python manage.py ingest_china_gdp`.
+
 | Field | Description |
 |---|---|
 | metric_id | Internal unique identifier |

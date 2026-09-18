@@ -1,6 +1,7 @@
 from django.test import TestCase
 from apps.integrations.clients.base import BaseApiClient
-from apps.evidence.models import RawDataLog
+from apps.evidence.models import RawDataLog, NormalizedMetric, DataAuditItem
+from apps.integrations.management.commands.ingest_china_gdp import ingest_china_gdp
 
 
 class BaseApiClientTests(TestCase):
@@ -39,3 +40,17 @@ class BaseApiClientTests(TestCase):
         self.assertEqual(sanitized['API_KEY'], '***REDACTED***')
         self.assertEqual(sanitized['Authorization'], '***REDACTED***')
         self.assertEqual(sanitized['data'], 'value')
+
+
+class ChinaGdpIngestTests(TestCase):
+    def test_idempotent_ingest_and_missing_values(self):
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/country/CHN/indicator/NY.GDP.MKTP.KD.ZG')
+        payload = [{}, [
+            {'indicator': {'id': 'NY.GDP.MKTP.KD.ZG'}, 'countryiso3code': 'CHN', 'date': '2025', 'value': 4.5},
+            {'indicator': {'id': 'NY.GDP.MKTP.KD.ZG'}, 'countryiso3code': 'CHN', 'date': '2024', 'value': None},
+        ]]
+        self.assertEqual(ingest_china_gdp(payload, log), (1, 1))
+        self.assertEqual(ingest_china_gdp(payload, log), (1, 1))
+        self.assertEqual(NormalizedMetric.objects.count(), 1)
+        self.assertEqual(NormalizedMetric.objects.get().raw_data_ref, log)
+        self.assertEqual(DataAuditItem.objects.get().missing_values, '1/2 (50.0%)')

@@ -13,9 +13,9 @@ Selesai bila UI dapat menunjukkan sumber, tanggal, nilai, unit, transformasi, co
 
 ## Tahap 2 — audit dan ingest aktual (blocker scoring)
 
-- [ ] Untuk empat komoditas, uji endpoint Sectors dan sumber eksternal dari dictionary; catat coverage, earliest/latest, frequency, unit, missingness, biaya/rate limit, lisensi di audit. Jangan gunakan seed sebagai hasil audit.
+- [ ] Untuk empat komoditas, uji endpoint Sectors dan sumber eksternal dari dictionary; catat coverage, earliest/latest, frequency, unit, missingness, biaya/rate limit, lisensi di audit. Jangan gunakan seed sebagai hasil audit. Sampel live pertama: China GDP Growth (World Bank, 2015–2025), tetapi lisensi/rate limit dan metric lain belum diaudit.
 - [ ] Pilih metric MVP yang benar-benar tersedia; catat proxy dan alasan bila tidak tersedia.
-- [ ] Implementasikan ingest satu metric yang sudah diaudit: raw log → validasi → normalisasi unit/periode → `NormalizedMetric` dengan referensi raw; idempotent untuk run ulang.
+- [x] Implementasikan ingest satu metric dari respons live: `python manage.py ingest_china_gdp` → raw log → validasi country/indicator → observasi annual `%` → `NormalizedMetric` dengan referensi raw; upsert idempotent. Audit parsial tercatat, belum `analytics_ready`.
 - [ ] Tambahkan cek freshness, duplikasi, nilai hilang, dan perbedaan unit. Perluas per metric hanya setelah satu jalur terbukti.
 
 Selesai bila observasi nyata dapat ditelusuri sampai response sumber dan audit mendukung klaim coverage-nya.
