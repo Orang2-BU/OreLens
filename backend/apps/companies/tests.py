@@ -110,3 +110,18 @@ class CompanyApiTests(TestCase):
         nickel_data = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=NICKEL').data
         self.assertEqual(nickel_data['exposure']['basis'], 'Commodity Revenue Share')
         self.assertEqual(float(nickel_data['exposure']['observation']['value']), 80)
+
+    def test_peer_rank_requires_three_same_period_and_unit(self):
+        log = RawDataLog.objects.create(source='Sectors', endpoint='/company', status_code=200)
+        for ticker, value in [('ADRO.JK', 10), ('PTBA.JK', 20), ('ANTM.JK', 30)]:
+            peer = self.company if ticker == self.company.ticker else Company.objects.create(ticker=ticker, name=ticker)
+            CompanyCommodityExposure.objects.get_or_create(company=peer, commodity=self.commodity)
+            NormalizedMetric.objects.create(metric_name='ROE', definition='Return on equity',
+                entity_type='Company', entity_id=ticker, source='Sectors', frequency='Annual',
+                unit='%', observation_date='2025-12-31', value=value, raw_data_ref=log)
+        response = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=COAL').data
+        self.assertEqual(response['peer_comparison']['ROE']['peer_count'], 3)
+        self.assertAlmostEqual(response['peer_comparison']['ROE']['percentile_rank'], 100 / 3)
+        NormalizedMetric.objects.filter(entity_id='ANTM.JK').update(unit='ratio')
+        response = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=COAL').data
+        self.assertIsNone(response['peer_comparison']['ROE'])

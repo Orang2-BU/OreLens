@@ -14,6 +14,8 @@ Output yang ditargetkan: perubahan analisis, asumsi/metodologi, confidence, warn
 
 Model `Scenario`, `ScenarioInput`, dan `ScenarioResult` beserta endpoint baca sudah ada. Field hasil saat ini berisi estimated price impact, estimated new price, confidence interval, methodology, dan warnings. Nilai seed hanyalah contoh; tidak ada endpoint untuk membuat/menjalankan scenario baru atau engine yang menghitung dampak dari input.
 
+`POST /api/v1/commodities/{id}/scenario-preview/` dengan JSON `{"metric_name":"China GDP Growth","shock_pct":10}` kini memberi preview aritmetis pada driver yang punya evidence: `adjusted_value = baseline × (1 + shock_pct/100)`. Respons selalu `estimated_price_impact_pct: null` dan tidak menyimpan run. Ini bukan sensitivitas harga, forecast, atau validasi model.
+
 ## Kriteria sebelum interaksi aktif
 
 Data audit dan metodologi sensitivity tervalidasi, kontrak API input/output disepakati, validasi input tersedia, dan user dapat melihat sumber serta batasan hasil. UI mengikuti [UI Flow](../product/UI_FLOW.md).

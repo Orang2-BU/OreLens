@@ -2,6 +2,8 @@
 
 Status: rancangan penelitian. Belum ada hasil statistik atau bobot terkalibrasi.
 
+Implementasi awal: `GET /api/v1/commodities/{id}/quant-readiness/` menghitung jumlah periode harga ternormalisasi ber-provenance dan pasangan driver dengan tanggal/frekuensi sama, minimal 12, serta fetch driver tidak lebih lambat dari periode target. Ini hanya gate screening konservatif, belum menggantikan tanggal rilis/vintage, pemeriksaan unit, regresi, atau backtest. Database lokal saat ini `blocked` untuk Coal, Gold, Nickel, dan Copper.
+
 ## Pertanyaan
 
 Driver mana yang mempunyai hubungan historis cukup stabil dengan komoditas dalam regime yang berbeda? Bagaimana exposure dan resilience perusahaan diukur tanpa mencampur ukuran mentah yang tidak sebanding?

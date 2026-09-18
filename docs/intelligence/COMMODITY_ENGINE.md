@@ -20,3 +20,5 @@ Jelaskan lingkungan setiap komoditas melalui supply, physical demand, structural
 5. Turunkan driver importance dari pipeline di [Quant Methodology](QUANT_METHODOLOGY.md), bukan nilai contoh seed.
 
 Model `CommodityDriver` saat ini menyimpan jenis, arah, confidence, dan correlation_score. Seed mengisi angka contoh. Belum ada engine perhitungan driver importance atau data historis yang diaudit.
+
+Endpoint `GET /api/v1/commodities/{id}/intelligence/` kini menyajikan driver map evidence-first untuk supply, demand, dan macro. Metric yang tidak punya observasi ber-raw-log HTTP 200 ditandai unavailable; event/policy tetap kualitatif. `importance` selalu null. Daftar metric adalah hipotesis dari Data Dictionary, bukan hasil regression; correlation seed tidak dipakai.

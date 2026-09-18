@@ -49,7 +49,7 @@ Base path: `/api/v1/`. Endpoint berikut berbentuk read-only dan mengembalikan de
 ## Gap kontrak yang perlu diselesaikan
 
 - Filter resilience per company dan exact `entity_id`/`metric_name` pada evidence sudah tersedia. Endpoint `companies/{id}/intelligence/?commodity=CODE` menampilkan evidence company dan commodity terpisah dengan status `pending_data_audit`; skor tetap `null` sampai audit dan validasi. Ini bukan klaim keterkaitan kausal antar-observasi.
-- Relasi driver ke normalized metric belum ada. Snapshot exposure di `companies/{id}/intelligence/?commodity=CODE` memakai `NormalizedMetric.commodity` dan hanya raw log HTTP 200; belum ada audit seluruh sumber atau skor tervalidasi.
+- Driver map evidence-first tersedia di `commodities/{id}/intelligence/`; relasi persisted `CommodityDriver` ke normalized metric belum ada dan correlation seed tidak digunakan. Snapshot exposure di `companies/{id}/intelligence/?commodity=CODE` memakai `NormalizedMetric.commodity` dan hanya raw log HTTP 200. `commodities/{id}/quant-readiness/` menampilkan gate cakupan, sedangkan `POST commodities/{id}/scenario-preview/` hanya mengubah asumsi driver secara aritmetis; belum ada audit seluruh sumber atau skor/sensitivitas harga tervalidasi.
 - Penanda data demo vs data aktual pada response.
 - Endpoint submit/run scenario setelah metodologi dan validasi input disepakati.
 - Aturan keamanan raw logs, auth, rate limit, dan cache. Semuanya belum dapat dianggap selesai hanya karena modelnya ada.

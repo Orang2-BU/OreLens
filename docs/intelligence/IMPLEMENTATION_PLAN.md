@@ -24,16 +24,18 @@ Selesai bila observasi nyata dapat ditelusuri sampai response sumber dan audit m
 
 - [x] Read path exposure per komoditas: hanya observasi ber-provenance dan terhubung ke komoditas; revenue share diprioritaskan, production/sales dependency diberi label proxy dan confidence analisis Low. Missing tetap `null`. Skor numerik final belum dihitung.
 - [x] Read path resilience terpisah: komponen reserve coverage, stabilitas produksi, diversifikasi, DER, ROE ditampilkan bila ada evidence; score tetap `null`.
-- [ ] Commodity driver map: supply, demand, macro, event/policy dengan arah sebagai hipotesis sampai diuji.
+- [x] Driver map per commodity memakai metric supply/demand/macro dari dictionary dan hanya menampilkan observasi ber-provenance; kategori event/policy kualitatif. Semua `importance` null dan status hipotesis, bukan hasil korelasi seed.
 - [x] Snapshot fundamental per perusahaan dari metric Revenue Growth, Net Income Growth, ROE, DER, PE, PB ber-provenance; missing `null`.
-- [ ] Fundamental comparison dalam peer group yang valid, dengan periode dan unit yang sebanding. Snapshot saat ini belum melakukan peer comparison.
+- [x] Peer rank kandidat memakai company universe per commodity dan hanya muncul bila ≥3 perusahaan punya metric, periode, frekuensi, unit, dan transformasi yang sama. Rank numerik bukan kualitas investasi; validitas peer group/data sumber masih perlu audit.
 
 Selesai bila setiap insight memiliki input, periode, sumber, confidence, status proxy, dan alasan saat unavailable.
 
 ## Tahap 4 — quant validation dan skenario
 
-- [ ] Selaraskan series dan cegah look-ahead; lakukan correlation screening, regression, rolling/regime checks, dan backtest out-of-sample terhadap baseline sederhana.
+- [x] Gate kesiapan quant per commodity memeriksa seri harga/driver ber-provenance, periode+frekuensi yang sama, minimal 12 pasangan, dan tanggal fetch driver tidak melewati periode target. Di DB lokal empat commodity berstatus `blocked`; ini belum membuktikan bebas look-ahead karena tanggal publikasi/vintage belum tersedia.
+- [ ] Setelah data aktual cukup: selaraskan unit/transformasi, verifikasi vintage, lakukan correlation screening, regression, rolling/regime checks, dan backtest out-of-sample terhadap baseline sederhana.
 - [ ] Hanya rilis driver importance/bobot numerik bila stabilitas dan cakupan memadai; jika gagal, sajikan sebagai konteks kualitatif.
-- [ ] Jalankan skenario deterministik berbasis input terstruktur, tampilkan asumsi dan sensitivitas; tidak mengklaim prediksi harga saham.
+- [x] Preview skenario deterministik (`POST /api/v1/commodities/{id}/scenario-preview/`) menghitung perubahan aritmetis satu driver teramati dari `metric_name` dan `shock_pct`; baseline/evidence/warning terlihat, dampak harga null. Tidak menyimpan scenario run.
+- [ ] Skenario sensitivitas terhadap harga/analisis baru boleh dijalankan setelah koefisien dan rentang input divalidasi.
 
 Selesai bila metodologi, sampel, baseline, dan hasil uji bisa direproduksi. Bobot final dan forecast tidak termasuk tahap awal.

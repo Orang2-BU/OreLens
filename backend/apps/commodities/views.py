@@ -1,8 +1,13 @@
 from rest_framework import viewsets, filters
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Commodity, CommodityPriceSeries, CommodityDriver
 from .serializers import CommoditySerializer, CommodityPriceSeriesSerializer, CommodityDriverSerializer
+from apps.intelligence.commodity_snapshot import build_driver_map, preview_driver_shock
+from apps.analytics.validation import quant_readiness
 
 
 @extend_schema_view(
@@ -17,6 +22,24 @@ class CommodityViewSet(viewsets.ReadOnlyModelViewSet):
     search_fields = ['code', 'name']
     ordering_fields = ['name', 'current_price', 'price_change_pct_ytd']
     ordering = ['name']
+
+    @action(detail=True, methods=['get'])
+    def intelligence(self, request, pk=None):
+        commodity = self.get_object()
+        return Response({'commodity': commodity.code, **build_driver_map(commodity)})
+
+    @action(detail=True, methods=['post'], url_path='scenario-preview')
+    def scenario_preview(self, request, pk=None):
+        commodity = self.get_object()
+        try:
+            result = preview_driver_shock(commodity, request.data.get('metric_name'), request.data.get('shock_pct'))
+        except ValueError as exc:
+            return Response({'detail': str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'commodity': commodity.code, **result})
+
+    @action(detail=True, methods=['get'], url_path='quant-readiness')
+    def quant_readiness(self, request, pk=None):
+        return Response(quant_readiness(self.get_object()))
 
 
 @extend_schema_view(

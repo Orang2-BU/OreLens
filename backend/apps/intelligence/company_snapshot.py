@@ -1,5 +1,7 @@
 from apps.evidence.models import NormalizedMetric
 from django.db.models import Q
+from apps.companies.models import CompanyCommodityExposure
+from apps.analytics.normalization import peer_percentile
 
 
 EXPOSURE_METRICS = ('Commodity Revenue Share', 'Production Dependency', 'Sales Dependency')
@@ -37,6 +39,37 @@ def build_company_snapshot(company, commodity):
 
     exposure = {name: observed(name, '%') for name in EXPOSURE_METRICS}
     selected = next((name for name in EXPOSURE_METRICS if exposure[name] is not None), None)
+
+    peer_tickers = list(CompanyCommodityExposure.objects.filter(
+        commodity=commodity, company__is_active=True,
+    ).values_list('company__ticker', flat=True))
+    peer_comparison = {}
+    for name in FUNDAMENTAL_METRICS:
+        own = latest.get(name)
+        if own is None or own.commodity_id is not None or company.ticker not in peer_tickers:
+            peer_comparison[name] = None
+            continue
+        # SQLite and PostgreSQL differ on DISTINCT ON; select latest per ticker in Python.
+        rows = NormalizedMetric.objects.filter(
+            metric_name=name, entity_type=NormalizedMetric.EntityType.COMPANY,
+            entity_id__in=peer_tickers, commodity__isnull=True,
+            observation_date=own.observation_date, frequency=own.frequency,
+            unit=own.unit, transformation=own.transformation,
+            source=own.source, definition=own.definition,
+            raw_data_ref__status_code=200,
+        ).order_by('entity_id', '-id')
+        peers = {}
+        for row in rows:
+            peers.setdefault(row.entity_id, row)
+        if len(peers) < 3 or company.ticker not in peers:
+            peer_comparison[name] = None
+        else:
+            peer_comparison[name] = {
+                'percentile_rank': peer_percentile(float(own.value), [float(row.value) for row in peers.values()]),
+                'peer_count': len(peers), 'period': own.observation_date,
+                'unit': own.unit, 'frequency': own.frequency,
+                'interpretation': 'numeric_rank_not_quality_score',
+            }
     return {
         'exposure': {
             'status': 'provisional' if selected else 'unavailable',
@@ -53,4 +86,5 @@ def build_company_snapshot(company, commodity):
             'score': None,
         },
         'fundamentals': {name: observed(name) for name in FUNDAMENTAL_METRICS},
+        'peer_comparison': peer_comparison,
     }
