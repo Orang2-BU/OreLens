@@ -33,3 +33,8 @@ Thumbs.db
 
 # Schema
 schema.yml
+
+# Frontend
+node_modules/
+playwright-report/
+test-results/

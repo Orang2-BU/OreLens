@@ -1,5 +1,9 @@
 # OreLens
 
+## Frontend (FE-01)
+
+Fondasi workspace React tersedia di `frontend/`. Jalankan `npm ci` lalu `npm run dev` dari folder tersebut. Lihat [panduan frontend](frontend/README.md) untuk konfigurasi API dan pengujian. Halaman fitur masih menunggu FE-02 dan seterusnya.
+
 OreLens - Commodity and Company Intelligence Platform untuk Sectors Hackathon.
 
 ## Structure
