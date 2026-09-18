@@ -9,7 +9,7 @@ def calculate_resilience_score(
     debt_to_equity: float = None,
     ebitda_margin: float = None,
     sales_diversification_hhi: float = None,
-) -> tuple[float, str]:
+) -> tuple[float | None, str]:
     """
     Calculate preliminary resilience score.
 
@@ -55,8 +55,8 @@ def calculate_resilience_score(
         else:
             components.append(5)
 
-    if not components:
-        return (0.0, 'Unavailable - insufficient metrics')
+    if len(components) != 4:
+        return (None, 'Unavailable - insufficient metrics')
 
     score = sum(components)
     status = 'Pending Validation - preliminary methodology'

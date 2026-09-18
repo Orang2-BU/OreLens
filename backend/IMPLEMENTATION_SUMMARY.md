@@ -47,11 +47,11 @@
 - Reserve coverage (normal, zero-production)
 - Peer percentile (median, highest, lowest)
 
-### Intelligence Tests (9 total)
+### Intelligence Tests (10 total)
 - Exposure scoring (high/medium/low confidence, unavailable, concentration adjustment)
 - Resilience scoring (strong/mixed/weak metrics, unavailable)
 
-### API Tests (24 total)
+### API Tests (25 total)
 - Commodities: list, detail, drivers, schema/redoc
 - Companies: list, detail, exposures, resilience filter
 - Evidence: raw logs, metrics, audit
@@ -61,11 +61,11 @@
 ## Hasil Test
 
 ```
-Ran 44 tests in 0.246s
+Ran 46 tests in 0.423s
 OK
 ```
 
-✅ Semua 44 test pass tanpa error
+✅ Semua 46 test pass tanpa error
 
 ## Kesesuaian dengan Dokumentasi
 

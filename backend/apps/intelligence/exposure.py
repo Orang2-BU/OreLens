@@ -9,7 +9,7 @@ def calculate_exposure_score(
     production_dependency_pct: float = None,
     sales_dependency_pct: float = None,
     operational_concentration_hhi: float = None,
-) -> tuple[float, str]:
+) -> tuple[float | None, str]:
     """
     Calculate preliminary exposure score.
 
@@ -31,7 +31,7 @@ def calculate_exposure_score(
         base_score = production_dependency_pct
         confidence = 'Low'
     else:
-        return (0.0, 'Unavailable')
+        return (None, 'Unavailable')
 
     # Adjust for operational concentration if available
     if operational_concentration_hhi is not None and operational_concentration_hhi > 0.5:

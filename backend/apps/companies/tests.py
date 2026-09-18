@@ -59,3 +59,15 @@ class CompanyApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
         self.assertEqual(response.data['results'][0]['resilience_score'], 80.0)
+
+    def test_missing_scores_are_null_in_api(self):
+        self.exposure.revenue_share_pct = None
+        self.exposure.exposure_score = None
+        self.exposure.save()
+        self.resilience.resilience_score = None
+        self.resilience.save()
+        exposure = self.client.get('/api/v1/company-exposures/').data['results'][0]
+        resilience = self.client.get('/api/v1/company-resilience/').data['results'][0]
+        self.assertIsNone(exposure['revenue_share_pct'])
+        self.assertIsNone(exposure['exposure_score'])
+        self.assertIsNone(resilience['resilience_score'])

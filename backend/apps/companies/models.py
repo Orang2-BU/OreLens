@@ -26,11 +26,11 @@ class Company(models.Model):
 class CompanyCommodityExposure(models.Model):
     company = models.ForeignKey(Company, related_name='commodity_exposures', on_delete=models.CASCADE)
     commodity = models.ForeignKey(Commodity, related_name='company_exposures', on_delete=models.CASCADE)
-    revenue_share_pct = models.FloatField(help_text='Percentage of total revenue derived from this commodity (0-100)')
+    revenue_share_pct = models.FloatField(null=True, blank=True, help_text='Percentage of total revenue derived from this commodity (0-100)')
     production_volume = models.DecimalField(max_digits=18, decimal_places=2, null=True, blank=True)
     production_unit = models.CharField(max_length=50, blank=True)
     cash_cost_per_unit = models.DecimalField(max_digits=14, decimal_places=2, null=True, blank=True)
-    exposure_score = models.FloatField(default=0.0, help_text='Normalized exposure metric score (0-100)')
+    exposure_score = models.FloatField(null=True, blank=True, default=None, help_text='Preliminary exposure score (0-100); null when unavailable')
     notes = models.TextField(blank=True)
 
     class Meta:
@@ -49,7 +49,7 @@ class CompanyResilience(models.Model):
     free_cash_flow = models.DecimalField(max_digits=20, decimal_places=2, default=0)
     net_cash_position = models.DecimalField(max_digits=20, decimal_places=2, default=0)
     reserve_life_years = models.FloatField(null=True, blank=True)
-    resilience_score = models.FloatField(default=0.0, help_text='Preliminary resilience index (0-100)')
+    resilience_score = models.FloatField(null=True, blank=True, default=None, help_text='Preliminary resilience index (0-100); null when unavailable')
     scoring_status = models.CharField(
         max_length=50,
         default='Pending Validation',

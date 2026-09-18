@@ -29,17 +29,17 @@
 - [x] Implemented `resilience.py`:
   - `calculate_resilience_score()` with "Pending Validation" status
   - Reserve coverage, leverage, profitability, diversification
-- [x] 9 intelligence tests pass
+- [x] 10 intelligence tests pass
 
 ### Test Coverage
 - [x] Analytics: 11 tests
-- [x] Intelligence: 9 tests
-- [x] Companies: 4 tests
+- [x] Intelligence: 10 tests
+- [x] Companies: 5 tests
 - [x] Evidence: 5 tests
 - [x] Scenarios: 5 tests
 - [x] Integrations: 5 tests
 - [x] Commodities: 5 tests (existing)
-- [x] **Total: 44 tests, all passing**
+- [x] **Total: 46 tests, all passing**
 
 ### Database
 - [x] Applied migration `scenarios.0002_alter_scenarioinput_options_and_more`
@@ -82,11 +82,11 @@
 Creating test database...
 ............................................
 ----------------------------------------------------------------------
-Ran 44 tests in 0.246s
+Ran 46 tests in 0.423s
 
 OK
 Destroying test database...
-Found 44 test(s).
+Found 46 test(s).
 System check identified no issues (0 silenced).
 ```
 
@@ -103,7 +103,7 @@ System check identified no issues (0 silenced).
 | Analytics normalization | HHI, YoY, percentile | ✅ |
 | Intelligence engine | Exposure & resilience logic | ✅ |
 | API filters complete | Company resilience filter added | ✅ |
-| Comprehensive tests | 44 tests, all passing | ✅ |
+| Comprehensive tests | 46 tests, all passing | ✅ |
 
 ## Summary
 
@@ -113,7 +113,7 @@ Backend **fully aligned** dengan konsep dokumentasi. Semua gap yang ditemukan su
 2. ✅ Credential sanitization implemented
 3. ✅ Analytics module created & tested
 4. ✅ Intelligence module created & tested
-5. ✅ Test coverage comprehensive (44 tests)
+5. ✅ Test coverage comprehensive (46 tests)
 6. ✅ Model ordering fixed
 7. ✅ Scoring labels preserve "Pending Validation" status
 

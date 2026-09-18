@@ -28,7 +28,7 @@ class ExposureTests(TestCase):
 
     def test_exposure_unavailable(self):
         score, confidence = calculate_exposure_score()
-        self.assertEqual(score, 0.0)
+        self.assertIsNone(score)
         self.assertEqual(confidence, 'Unavailable')
 
     def test_exposure_concentration_adjustment(self):
@@ -71,5 +71,10 @@ class ResilienceTests(TestCase):
 
     def test_resilience_unavailable(self):
         score, status = calculate_resilience_score()
-        self.assertEqual(score, 0.0)
+        self.assertIsNone(score)
+        self.assertIn('Unavailable', status)
+
+    def test_resilience_partial_data_is_unavailable(self):
+        score, status = calculate_resilience_score(reserve_coverage=12.0)
+        self.assertIsNone(score)
         self.assertIn('Unavailable', status)
