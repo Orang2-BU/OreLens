@@ -3,6 +3,7 @@ from apps.integrations.clients.base import BaseApiClient
 from apps.evidence.models import RawDataLog, NormalizedMetric, DataAuditItem
 from apps.integrations.management.commands.ingest_china_gdp import ingest_china_gdp
 from apps.integrations.management.commands.ingest_coal_production import ingest_coal_production
+from apps.integrations.management.commands.ingest_coal_price import ingest_coal_price
 from apps.commodities.models import Commodity
 
 
@@ -72,3 +73,24 @@ class CoalProxyIngestTests(TestCase):
         self.assertTrue(metric.is_proxy)
         self.assertIn('not physical coal production', metric.proxy_description)
         self.assertTrue(DataAuditItem.objects.get().proxy_required)
+
+
+class CoalPriceIngestTests(TestCase):
+    def test_ingests_annual_returns_idempotently(self):
+        Commodity.objects.create(code='COAL', name='Coal', benchmark_unit='USD/mt')
+        log = RawDataLog.objects.create(source='FRED', endpoint='/coal-price')
+        rows = [
+            {'DATE': '2020-01-01', 'PCOALAUUSDA': '50'},
+            {'DATE': '2021-01-01', 'PCOALAUUSDA': '75'},
+            {'DATE': '2022-01-01', 'PCOALAUUSDA': '60'},
+        ]
+        self.assertEqual(ingest_coal_price(rows, log), 2)
+        self.assertEqual(ingest_coal_price(rows, log), 2)
+        metrics = NormalizedMetric.objects.filter(metric_name='Commodity Price')
+        self.assertEqual(metrics.count(), 2)
+        self.assertEqual(metrics.get(observation_date='2021-12-31').value, 50)
+        self.assertEqual(metrics.get(observation_date='2022-12-31').transformation, 'Return')
+
+        live_header_rows = [{'observation_date': '2023-01-01', 'PCOALAUUSDA': '90'},
+                            {'observation_date': '2024-01-01', 'PCOALAUUSDA': '99'}]
+        self.assertEqual(ingest_coal_price(live_header_rows, log), 1)

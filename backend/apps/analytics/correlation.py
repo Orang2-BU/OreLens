@@ -39,17 +39,37 @@ def screen_driver(commodity, driver):
         and all(row['transformation'] in allowed_transforms for row in prices + driver_rows)
     )
     price_by_date = {row['observation_date']: float(row['value']) for row in prices}
-    matched_pairs = [(price_by_date[row['observation_date']], float(row['value']))
-                     for row in driver_rows if row['observation_date'] in price_by_date]
-    pairs = matched_pairs if metadata_valid else []
+    matched = sorted((row['observation_date'], price_by_date[row['observation_date']], float(row['value']))
+                     for row in driver_rows if row['observation_date'] in price_by_date)
+    pairs = [(price, value) for _, price, value in matched] if metadata_valid else []
     score = pearson([pair[0] for pair in pairs], [pair[1] for pair in pairs]) if len(pairs) >= 12 else None
+    rolling = [pearson([pair[0] for pair in pairs[i:i + 12]], [pair[1] for pair in pairs[i:i + 12]])
+               for i in range(len(pairs) - 11)]
+    split = int(len(pairs) * .7)
+    train = pearson([pair[0] for pair in pairs[:split]], [pair[1] for pair in pairs[:split]]) if split >= 3 else None
+    test = pearson([pair[0] for pair in pairs[split:]], [pair[1] for pair in pairs[split:]]) if len(pairs) - split >= 3 else None
+    rolling_valid = [value for value in rolling if value is not None]
+    same_sign_ratio = (sum(1 for value in rolling_valid if score is not None and value * score >= 0) / len(rolling_valid)) if rolling_valid else 0
+    stable = bool(score is not None and train is not None and test is not None
+                  and abs(score) >= .1 and same_sign_ratio >= .7
+                  and score * train >= 0 and score * test >= 0
+                  and abs(score - train) <= .5 and abs(score - test) <= .5)
+    details = {
+        'observations': len(matched), 'window': 12,
+        'rolling_correlations': rolling, 'train_correlation': train,
+        'test_correlation': test, 'split_index': split,
+        'same_sign_ratio': round(same_sign_ratio, 4),
+        'stable': stable, 'metadata_valid': metadata_valid,
+    }
     driver.correlation_score = score
-    driver.confidence = 'Medium' if score is not None else 'Low'
+    driver.confidence = 'Medium' if stable else 'Low'
     driver.evidence = latest
-    driver.save(update_fields=['correlation_score', 'confidence', 'evidence'])
+    driver.validation_details = details
+    driver.save(update_fields=['correlation_score', 'confidence', 'evidence', 'validation_details'])
     return {
         'correlation_score': score,
-        'observations': len(matched_pairs),
+        'observations': len(matched),
         'confidence': driver.confidence,
-        'status': 'screened' if score is not None else 'insufficient_or_incompatible_data',
+        'status': 'stable' if stable else ('negligible_or_unstable' if score is not None else 'insufficient_or_incompatible_data'),
+        'validation': details,
     }

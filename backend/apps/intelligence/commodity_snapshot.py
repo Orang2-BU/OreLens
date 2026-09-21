@@ -33,9 +33,10 @@ def build_driver_map(commodity):
             'latest': ({'value': row.value, 'unit': row.unit, 'date': row.observation_date,
                         'source': row.source, 'confidence': row.confidence,
                         'is_proxy': row.is_proxy, 'evidence_id': row.id} if row else None),
-            'importance': abs(persisted.correlation_score) if persisted and persisted.correlation_score is not None else None,
+            'importance': abs(persisted.correlation_score) if persisted and persisted.correlation_score is not None and persisted.confidence != 'Low' else None,
             'correlation_score': persisted.correlation_score if persisted else None,
             'correlation_confidence': persisted.confidence if persisted else None,
+            'validation': persisted.validation_details if persisted else {},
         })
     return {'status': 'preliminary_correlation' if any(item['correlation_score'] is not None for item in drivers) else 'hypotheses_not_validated', 'drivers': drivers,
             'event_policy': {'status': 'qualitative_only', 'importance': None}}

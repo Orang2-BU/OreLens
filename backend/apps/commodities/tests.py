@@ -85,6 +85,7 @@ class CommodityApiTests(TestCase):
                 NormalizedMetric.objects.create(metric_name=name, definition=name,
                     entity_type=entity_type, entity_id=entity_id, source='World Bank',
                     frequency=frequency, unit='%', observation_date=when,
+                    transformation='Return' if name == 'Commodity Price' else 'YoY %',
                     value=5, raw_data_ref=log)
         url = f'/api/v1/commodities/{self.commodity.id}/quant-readiness/'
         self.assertEqual(self.client.get(url).data['status'], 'blocked')

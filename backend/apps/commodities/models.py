@@ -65,6 +65,7 @@ class CommodityDriver(models.Model):
     latest_value = models.CharField(max_length=100, blank=True)
     unit = models.CharField(max_length=50, blank=True)
     evidence = models.ForeignKey('evidence.NormalizedMetric', null=True, blank=True, on_delete=models.SET_NULL, related_name='commodity_drivers')
+    validation_details = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ['driver_type', 'name']

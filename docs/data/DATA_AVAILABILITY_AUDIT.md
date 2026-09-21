@@ -43,6 +43,10 @@ Checked 2026-09-18 via `https://api.worldbank.org/v2/country/CHN/indicator/NY.GD
 
 Checked 2026-09-21 via World Bank indicator `EG.ELC.COAL.ZS` for Indonesia, 2000–2024. HTTP 200; 24 usable annual rows and 1 null; unit `% of total` (electricity production from coal sources), raw response linked. Internal metric name is `Indonesia Electricity from Coal Share`, with `is_proxy = true`; it is not physical Indonesia coal production and is excluded from the supply-driver hypothesis named `Indonesia Coal Production`. Run: `cd backend && python manage.py ingest_coal_production`.
 
+### Verified live sample — Coal benchmark price
+
+Checked 2026-09-21 from FRED/IMF series `PCOALAUUSDA` (`Global price of Coal, Australia`). The annual series provides 34 price levels for 1992–2025; OreLens stores 33 consecutive annual returns for 1993–2025 as `Commodity Price`, frequency `Annual`, unit `%`, transformation `Return`, with raw-response provenance. Run: `cd backend && python manage.py ingest_coal_price`.
+
 | Field | Description |
 |---|---|
 | metric_id | Internal unique identifier |

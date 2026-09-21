@@ -10,7 +10,7 @@ from apps.integrations.clients.worldbank import WorldBankClient
 
 METRIC = 'China GDP Growth'
 ENDPOINT = '/country/CHN/indicator/NY.GDP.MKTP.KD.ZG'
-DATE_RANGE = '2015:2025'
+DATE_RANGE = '1992:2025'
 
 
 def ingest_china_gdp(payload, raw_log):
@@ -32,7 +32,7 @@ def ingest_china_gdp(payload, raw_log):
                 defaults={
                     'definition': 'GDP growth (annual %), World Bank indicator NY.GDP.MKTP.KD.ZG',
                     'frequency': 'Annual', 'unit': '%', 'original_unit': '%',
-                    'transformation': 'None', 'priority': 'High', 'confidence': 'Medium',
+                    'transformation': 'YoY %', 'priority': 'High', 'confidence': 'Medium',
                     'value': Decimal(str(row['value'])), 'raw_data_ref': raw_log,
                 },
             )

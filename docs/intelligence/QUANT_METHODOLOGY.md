@@ -2,7 +2,9 @@
 
 Status: rancangan penelitian. Belum ada hasil statistik atau bobot terkalibrasi.
 
-Implementasi awal: `GET /api/v1/commodities/{id}/quant-readiness/` menghitung jumlah periode harga ternormalisasi ber-provenance dan pasangan driver dengan tanggal/frekuensi sama, minimal 12, serta fetch driver tidak lebih lambat dari periode target. Ini hanya gate screening konservatif, belum menggantikan tanggal rilis/vintage, pemeriksaan unit, regresi, atau backtest. Database lokal saat ini `blocked` untuk Coal, Gold, Nickel, dan Copper.
+Implementasi awal: `GET /api/v1/commodities/{id}/quant-readiness/` menghitung jumlah periode harga/driver yang ber-provenance, sudah ditransformasi, serta memiliki tanggal dan frekuensi sama dengan minimum 12 pasangan. Ini hanya gate screening; tanggal publikasi/vintage historis belum tersedia dan dilaporkan eksplisit, sehingga belum menggantikan vintage-safe backtest, regression, atau validation final.
+
+Update P1 (2026-09-21): Coal memiliki 33 annual price returns dan 33 aligned China GDP YoY observations. Pearson full-period `r = 0.013022`, train `r = 0.206887`, test `r = 0.141947`; rolling 12-period correlation berubah dari positif ke negatif pada sebagian window. Karena `|r| < 0.1`, hubungan diklasifikasikan negligible/Low dan tidak diterbitkan sebagai driver importance. Coal berstatus `ready_for_screening`, bukan validated/backtested; supply/import drivers dan historical publication vintage masih unavailable.
 
 ## Pertanyaan
 
