@@ -20,6 +20,8 @@ Model `Scenario`, `ScenarioInput`, dan `ScenarioResult` beserta endpoint baca su
 
 P2 menambahkan validasi distribusi historis: minimal 12 perubahan antarperiode dengan frequency, unit, dan transformation yang sama; shock harus berada di rentang percentile 5–95. `ScenarioResult` memiliki `run_status` (`arithmetic_preview`, `preliminary_sensitivity`, `validated_sensitivity`) dan `run_metadata` berisi model version, evidence/raw-log IDs, observation window, jumlah observasi, historical shock range, coefficient source, confidence, correlation context, dan data coverage. Saat ini hanya `arithmetic_preview` yang dapat diterbitkan; dua status sensitivity disediakan untuk coefficient yang kelak lolos validation. Correlation positif/negatif/negligible hanya dicatat sebagai konteks dan tidak mengisi price impact. Setiap rerun arithmetic juga mengosongkan stale confidence interval.
 
+Preview dan run berbagi perhitungan perubahan relatif historis yang sama; perbedaan keduanya hanya preview tidak menyimpan hasil. Data demo tidak boleh dipresentasikan sebagai evidence API live.
+
 ## Kriteria sebelum interaksi aktif
 
 Data audit dan metodologi sensitivity tervalidasi, kontrak API input/output disepakati, validasi input tersedia, dan user dapat melihat sumber serta batasan hasil. UI mengikuti [UI Flow](../product/UI_FLOW.md).

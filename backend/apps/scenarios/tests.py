@@ -90,6 +90,24 @@ class ScenarioApiTests(TestCase):
         self.assertEqual(result.run_metadata['correlation_context'], 'unavailable')
         self.assertEqual(len(result.run_metadata['normalized_metric_ids']), 14)
 
+    def test_preview_and_run_share_historical_guardrail(self):
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
+        for year in range(2012, 2026):
+            NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+                entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+                transformation='YoY %', observation_date=f'{year}-12-31',
+                value=100 * (1.1 ** (year - 2012)), raw_data_ref=log)
+        preview = self.client.post(f'/api/v1/commodities/{self.commodity.id}/scenario-preview/',
+            {'metric_name': 'China GDP Growth', 'shock_pct': 10}, format='json')
+        run = self.client.post(f'/api/v1/scenarios/{self.scenario.id}/run/',
+            {'metric_name': 'China GDP Growth', 'shock_pct': 10}, format='json')
+
+        self.assertEqual(preview.status_code, status.HTTP_200_OK)
+        self.assertEqual(run.status_code, status.HTTP_200_OK)
+        bounds = ScenarioResult.objects.get(scenario=self.scenario).run_metadata['historical_shock_range_pct']
+        self.assertAlmostEqual(preview.data['guardrail']['p05'], bounds['p05'], places=2)
+        self.assertAlmostEqual(preview.data['guardrail']['p95'], bounds['p95'], places=2)
+
     def test_run_rejects_insufficient_history_and_outlier_shock(self):
         log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
         for year in range(2020, 2025):

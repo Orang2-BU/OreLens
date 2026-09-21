@@ -43,6 +43,8 @@ Selesai bila setiap insight memiliki input, periode, sumber, confidence, status 
 - [x] Preview skenario deterministik (`POST /api/v1/commodities/{id}/scenario-preview/`) menghitung perubahan aritmetis satu driver teramati dari `metric_name` dan `shock_pct`; baseline/evidence/warning terlihat, dampak harga null. Tidak menyimpan scenario run.
 - [x] `POST /api/v1/scenarios/{id}/run/` memvalidasi driver/evidence dan range shock serta menyimpan input/result. Correlation tidak diperlakukan sebagai coefficient; tanpa regression coefficient tervalidasi, `estimated_price_impact_pct` dan `estimated_new_price` selalu null.
 - [x] P2 scenario safety: minimal 12 historical changes; shock dibatasi percentile 5–95; run metadata menyimpan model version, evidence/raw-log IDs, observation window, coefficient source, confidence, correlation context, dan coverage.
+- [x] Provenance guard: `RawDataLog.data_origin` membedakan `live_api`, imported, derived, dan `seed_demo`. Seed company metrics direklasifikasi sebagai `Seed Demo`/Low confidence dan snapshot tidak boleh menerbitkannya sebagai `evidence_backed`.
+- [x] Preview dan scenario run memakai distribusi perubahan historis relatif yang sama untuk guardrail P05–P95.
 - [x] Status run eksplisit tersedia: `arithmetic_preview`, `preliminary_sensitivity`, `validated_sensitivity`. Engine saat ini hanya menerbitkan arithmetic preview dan membersihkan stale price impact/confidence interval saat rerun.
 - [ ] Skenario sensitivitas production-ready baru boleh dijalankan setelah koefisien, volatilitas historis, unit, dan rentang input divalidasi.
 

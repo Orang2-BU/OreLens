@@ -4,17 +4,25 @@ from apps.commodities.models import Commodity
 
 class RawDataLog(models.Model):
     class SourceType(models.TextChoices):
+        SEED_DEMO = 'Seed Demo', 'Seed demo data'
         SECTORS = 'Sectors', 'Sectors API'
         WORLD_BANK = 'World Bank', 'World Bank API'
         FRED = 'FRED', 'FRED Federal Reserve API'
         UN_COMTRADE = 'UN Comtrade', 'UN Comtrade API'
         EIA = 'EIA', 'EIA Energy API'
 
+    class DataOrigin(models.TextChoices):
+        LIVE_API = 'live_api', 'Live API'
+        IMPORTED_FILE = 'imported_file', 'Imported file'
+        DERIVED = 'derived', 'Derived'
+        SEED_DEMO = 'seed_demo', 'Seed demo'
+
     source = models.CharField(max_length=50, choices=SourceType.choices)
     endpoint = models.CharField(max_length=255)
     request_params = models.JSONField(default=dict, blank=True)
     response_payload = models.JSONField(default=dict, blank=True)
     status_code = models.IntegerField(default=200)
+    data_origin = models.CharField(max_length=20, choices=DataOrigin.choices, default=DataOrigin.LIVE_API)
     fetched_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

@@ -322,11 +322,15 @@ class Command(BaseCommand):
                 defaults=resilience
             )
 
-            # 3b. Seed Normalized Company Metrics with RawDataLog provenance
+            # 3b. Demo company metrics. They must never impersonate live Sectors data.
             raw_log, _ = RawDataLog.objects.get_or_create(
-                source=RawDataLog.SourceType.SECTORS,
-                endpoint=f'/v1/company/report/{comp.ticker}/',
-                defaults={'status_code': 200, 'response_payload': {'ticker': comp.ticker, 'status': 'audited'}}
+                source=RawDataLog.SourceType.SEED_DEMO,
+                endpoint=f'seed://company/report/{comp.ticker}/',
+                defaults={
+                    'status_code': 200,
+                    'data_origin': RawDataLog.DataOrigin.SEED_DEMO,
+                    'response_payload': {'ticker': comp.ticker, 'status': 'demo'},
+                },
             )
 
             obs_date = date(2024, 6, 30)
@@ -349,12 +353,12 @@ class Command(BaseCommand):
                         observation_date=obs_date,
                         defaults={
                             'definition': f"{m_name} for {comp.ticker} ({exp['commodity'].code})",
-                            'source': 'Sectors API',
+                            'source': 'Seed Demo',
                             'frequency': 'Annual',
                             'unit': m_unit,
                             'value': m_val,
                             'raw_data_ref': raw_log,
-                            'confidence': NormalizedMetric.Confidence.HIGH,
+                            'confidence': NormalizedMetric.Confidence.LOW,
                             'is_proxy': False,
                         }
                     )
@@ -384,12 +388,12 @@ class Command(BaseCommand):
                     observation_date=obs_date,
                     defaults={
                         'definition': f"{m_name} for {comp.ticker}",
-                        'source': 'Sectors API',
+                        'source': 'Seed Demo',
                         'frequency': 'Annual',
                         'unit': m_unit,
                         'value': m_val,
                         'raw_data_ref': raw_log,
-                        'confidence': NormalizedMetric.Confidence.HIGH,
+                        'confidence': NormalizedMetric.Confidence.LOW,
                         'is_proxy': False,
                     }
                 )
@@ -412,12 +416,12 @@ class Command(BaseCommand):
                     observation_date=obs_date,
                     defaults={
                         'definition': f"{m_name} for {comp.ticker}",
-                        'source': 'Sectors API',
+                        'source': 'Seed Demo',
                         'frequency': 'Annual',
                         'unit': m_unit,
                         'value': m_val,
                         'raw_data_ref': raw_log,
-                        'confidence': NormalizedMetric.Confidence.HIGH,
+                        'confidence': NormalizedMetric.Confidence.LOW,
                         'is_proxy': False,
                     }
                 )

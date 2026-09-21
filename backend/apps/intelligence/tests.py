@@ -229,3 +229,18 @@ class CompanySnapshotTests(TestCase):
         # 80.0 * 0.5 + 50.0 * 0.5 = 65.0
         self.assertEqual(snapshot['resilience']['uncertainty_adjusted_score'], 65.0)
         self.assertEqual(snapshot['resilience']['presentation']['uncertainty_level'], 'High')
+
+    def test_seed_log_is_not_evidence_backed(self):
+        log = RawDataLog.objects.create(
+            source=RawDataLog.SourceType.SEED_DEMO,
+            endpoint='seed://company/report/ADRO.JK/',
+            status_code=200,
+            data_origin=RawDataLog.DataOrigin.SEED_DEMO,
+        )
+        self._metric('Commodity Revenue Share', 80.0, '%', log, self.commodity)
+
+        snapshot = build_company_snapshot(self.company, self.commodity)
+
+        self.assertEqual(snapshot['data_mode'], 'seed_demo')
+        self.assertEqual(snapshot['exposure']['analysis_confidence'], 'Low')
+        self.assertEqual(snapshot['exposure']['observation']['data_origin'], 'seed_demo')

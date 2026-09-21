@@ -68,12 +68,11 @@ def preview_driver_shock(commodity, metric_name, shock_pct):
     if not math.isfinite(adjusted):
         raise ValueError('Adjusted value is outside supported range')
 
-    # Historical P05-P95 guardrail check
-    history_rows = list(NormalizedMetric.objects.filter(
-        metric_name=metric_name,
-        raw_data_ref__status_code=200,
-        entity_type__in=[NormalizedMetric.EntityType.COMMODITY, NormalizedMetric.EntityType.MACRO],
-    ).order_by('observation_date').values_list('value', 'transformation'))
+    # Use the same relative-change distribution as a persisted scenario run.
+    from apps.scenarios.guardrails import historical_shock_bounds
+    driver_spec = next(item for item in DRIVERS[commodity.code] if item[1] == metric_name)
+    _, _, entity_type, entity_id = driver_spec
+    _, shock_bounds = historical_shock_bounds(metric_name, entity_type, entity_id)
 
     guardrail = {
         'status': 'uncalibrated_bounds',
@@ -81,28 +80,18 @@ def preview_driver_shock(commodity, metric_name, shock_pct):
         'p95': None,
         'warning': 'Insufficient historical observations (< 12) to compute empirical P05-P95 bounds.'
     }
-    if len(history_rows) >= 12:
-        vals = [float(r[0]) for r in history_rows]
-        transforms = {r[1] for r in history_rows}
-        if transforms.intersection({'Return', 'Pct Change', 'YoY %', 'Log Return'}):
-            pct_changes = vals
-        else:
-            pct_changes = [(vals[i] - vals[i - 1]) / vals[i - 1] * 100 for i in range(1, len(vals)) if vals[i - 1] != 0]
-
-        if len(pct_changes) >= 12:
-            sorted_changes = sorted(pct_changes)
-            p05 = round(sorted_changes[int(len(sorted_changes) * 0.05)], 2)
-            p95 = round(sorted_changes[int(len(sorted_changes) * 0.95)], 2)
-            is_outside = shock_pct < p05 or shock_pct > p95
-            guardrail = {
-                'status': 'outside_historical_range' if is_outside else 'within_historical_range',
-                'p05': p05,
-                'p95': p95,
-                'warning': (
-                    f"Shock ({shock_pct}%) is outside historical P05-P95 range ({p05}% to {p95}%). Extreme tail shock assumption."
-                    if is_outside else None
-                )
-            }
+    if shock_bounds is not None:
+        p05, p95 = (round(value, 2) for value in shock_bounds)
+        is_outside = shock_pct < p05 or shock_pct > p95
+        guardrail = {
+            'status': 'outside_historical_range' if is_outside else 'within_historical_range',
+            'p05': p05,
+            'p95': p95,
+            'warning': (
+                f"Shock ({shock_pct}%) is outside historical P05-P95 range ({p05}% to {p95}%). Extreme tail shock assumption."
+                if is_outside else None
+            )
+        }
 
     return {
         'metric': metric_name,

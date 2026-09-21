@@ -32,6 +32,7 @@ def _metric_component(latest, name):
         'confidence': row.confidence,
         'is_proxy': row.is_proxy,
         'evidence_id': row.id,
+        'data_origin': row.raw_data_ref.data_origin if row.raw_data_ref_id else 'derived',
     }
 
 
@@ -40,7 +41,7 @@ def build_company_snapshot(company, commodity):
         entity_type=NormalizedMetric.EntityType.COMPANY,
         entity_id=company.ticker,
         raw_data_ref__status_code=200,
-    ).filter(Q(commodity=commodity) | Q(commodity__isnull=True)).order_by('-observation_date', '-id')
+    ).filter(Q(commodity=commodity) | Q(commodity__isnull=True)).select_related('raw_data_ref').order_by('-observation_date', '-id')
     latest = {}
     for row in observations:
         if row.metric_name in EXPOSURE_METRICS and row.commodity_id != commodity.id:
@@ -61,6 +62,7 @@ def build_company_snapshot(company, commodity):
             'confidence': row.confidence,
             'is_proxy': row.is_proxy,
             'evidence_id': row.id,
+            'data_origin': row.raw_data_ref.data_origin if row.raw_data_ref_id else 'derived',
         }
 
     exposure_components = {
@@ -82,6 +84,7 @@ def build_company_snapshot(company, commodity):
                 'confidence': 'Low',
                 'is_proxy': True,
                 'evidence_id': None,
+                'data_origin': 'seed_demo',
             }
             fallback_used = True
 
@@ -113,6 +116,7 @@ def build_company_snapshot(company, commodity):
                     'confidence': 'Low',
                     'is_proxy': True,
                     'evidence_id': None,
+                    'data_origin': 'derived',
                 }
 
     der_component = _metric_component(latest, 'DER')
@@ -153,6 +157,7 @@ def build_company_snapshot(company, commodity):
             'confidence': 'Low',
             'is_proxy': True,
             'evidence_id': None,
+            'data_origin': 'seed_demo',
         }
 
     resilience_components = {
@@ -223,7 +228,7 @@ def build_company_snapshot(company, commodity):
             'warning': 'Insufficient evidence to compute resilience score.'
         }
 
-    # Determine top-level data_mode: 'seed_demo' | 'evidence_backed' | 'mixed'
+    # Origin, not merely an HTTP-success log, determines whether evidence is live.
     evidence_sources = 0
     seed_sources = 0
 
@@ -231,14 +236,14 @@ def build_company_snapshot(company, commodity):
         seed_sources += 1
     elif selected is not None:
         exp_comp = exposure_components.get(selected)
-        if exp_comp and exp_comp.get('evidence_id') is not None and not exp_comp.get('is_proxy'):
+        if exp_comp and exp_comp.get('data_origin') in ('live_api', 'imported_file'):
             evidence_sources += 1
         else:
             seed_sources += 1
 
     for comp in resilience_components.values():
         if comp is not None:
-            if comp.get('evidence_id') is not None and not comp.get('is_proxy'):
+            if comp.get('data_origin') in ('live_api', 'imported_file'):
                 evidence_sources += 1
             elif comp.get('is_proxy') or 'seeded' in str(comp.get('source', '')).lower():
                 seed_sources += 1
@@ -251,6 +256,10 @@ def build_company_snapshot(company, commodity):
         data_mode = 'seed_demo'
     else:
         data_mode = 'seed_demo'
+
+    if data_mode != 'evidence_backed':
+        prefix = 'Demo or mixed-source data: scores are preliminary and not validated evidence.'
+        presentation['warning'] = f"{prefix} {presentation['warning'] or ''}".strip()
 
     # Peer comparison (unchanged)
     peer_tickers = list(CompanyCommodityExposure.objects.filter(
@@ -302,7 +311,7 @@ def build_company_snapshot(company, commodity):
             'basis': 'Commodity Revenue Share' if fallback_used else selected,
             'observation': exposure_components['Commodity Revenue Share'] if fallback_used else (exposure_components[selected] if selected else None),
             'analysis_confidence': (
-                ('Low' if fallback_used else exposure_confidence)
+                ('Low' if fallback_used or (selected and exposure_components[selected]['data_origin'] == 'seed_demo') else exposure_confidence)
                 if exposure_score is not None
                 else (('Low' if selected != 'Commodity Revenue Share' else exposure_components[selected]['confidence']) if selected else 'Unavailable')
             ),

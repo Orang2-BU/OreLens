@@ -26,7 +26,7 @@ The full backend suite now passes **65/65 tests** after P0/P1/P2 improvements.
 
 Company: `ADRO.JK`  
 Commodity: `COAL`  
-Evidence source: dummy `RawDataLog` with HTTP status `200` and source `Sectors`.
+Evidence source: dummy `RawDataLog` with HTTP status `200` and explicit origin `seed_demo`. It is intentionally not presented as a Sectors API response or validated evidence.
 
 Complete evidence scenario:
 

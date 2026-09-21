@@ -7,18 +7,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Scenario, ScenarioInput, ScenarioResult
 from .serializers import ScenarioSerializer, ScenarioInputSerializer, ScenarioResultSerializer
-from apps.evidence.models import NormalizedMetric
 from apps.intelligence.commodity_snapshot import DRIVERS
 from apps.commodities.models import CommodityDriver
-
-
-def _percentile(values, percentile):
-    ordered = sorted(values)
-    position = (len(ordered) - 1) * percentile
-    lower = int(position)
-    upper = min(lower + 1, len(ordered) - 1)
-    weight = position - lower
-    return ordered[lower] * (1 - weight) + ordered[upper] * weight
+from .guardrails import historical_shock_bounds
 
 
 @extend_schema_view(
@@ -49,19 +40,13 @@ class ScenarioViewSet(viewsets.ReadOnlyModelViewSet):
         if driver_spec is None:
             return Response({'detail': 'Metric is not an approved driver for this commodity.'}, status=status.HTTP_400_BAD_REQUEST)
         _, _, entity_type, entity_id = driver_spec
-        history = NormalizedMetric.objects.filter(
-            metric_name=metric_name, entity_type=entity_type, entity_id=entity_id,
-            raw_data_ref__status_code=200,
-        ).select_related('raw_data_ref').order_by('observation_date', 'id')
-        metric = history.last()
+        history, shock_bounds = historical_shock_bounds(metric_name, entity_type, entity_id)
+        metric = history[-1] if history else None
         if metric is None:
             return Response({'detail': 'Metric has no traceable evidence.'}, status=status.HTTP_400_BAD_REQUEST)
-        history = list(history.filter(frequency=metric.frequency, unit=metric.unit, transformation=metric.transformation))
-        changes = [(float(current.value) - float(previous.value)) / abs(float(previous.value)) * 100
-                   for previous, current in zip(history, history[1:]) if previous.value != 0]
-        if len(changes) < 12:
+        if shock_bounds is None:
             return Response({'detail': 'At least 12 historical changes are required to validate shock range.'}, status=status.HTTP_400_BAD_REQUEST)
-        shock_min, shock_max = _percentile(changes, .05), _percentile(changes, .95)
+        shock_min, shock_max = shock_bounds
         if not shock_min <= shock_pct <= shock_max:
             return Response({'detail': f'shock_pct must be within historical p05-p95 range [{shock_min:.4f}, {shock_max:.4f}].'}, status=status.HTTP_400_BAD_REQUEST)
         adjusted = float(metric.value) * (1 + shock_pct / 100)
