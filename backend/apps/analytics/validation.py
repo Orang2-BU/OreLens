@@ -24,10 +24,25 @@ def quant_readiness(commodity):
         drivers.append({'metric': name, 'category': category,
                         'safe_aligned_periods': consistent_periods,
                         'status': 'ready_for_screening' if consistent_periods >= 12 else 'insufficient_history_or_vintage'})
+    ready_count = sum(1 for d in drivers if d['status'] == 'ready_for_screening')
+    total_drivers = len(drivers)
+    price_ready = len(price_periods) >= 12
+
+    if total_drivers > 0 and ready_count == total_drivers and price_ready:
+        overall_status = 'ready'
+    elif ready_count > 0 and price_ready:
+        overall_status = 'partial_ready'
+    else:
+        overall_status = 'blocked'
+
     return {
-        'commodity': commodity.code, 'price_periods': len(price_periods),
-        'minimum_periods': 12, 'drivers': drivers,
-        'status': 'ready_for_screening' if any(d['status'] == 'ready_for_screening' for d in drivers) else 'blocked',
+        'commodity': commodity.code,
+        'price_periods': len(price_periods),
+        'minimum_periods': 12,
+        'drivers': drivers,
+        'ready_drivers_count': ready_count,
+        'total_drivers_count': total_drivers,
+        'status': overall_status,
         'vintage_status': 'unavailable',
         'note': 'Preliminary screening readiness only; historical publication/vintage dates are unavailable and must be resolved before backtesting.',
     }

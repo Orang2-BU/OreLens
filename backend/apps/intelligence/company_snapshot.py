@@ -1,4 +1,3 @@
-
 from apps.evidence.models import NormalizedMetric
 from django.db.models import Q
 from apps.companies.models import CompanyCommodityExposure, CompanyResilience
@@ -186,6 +185,73 @@ def build_company_snapshot(company, commodity):
         else:
             resilience_status = 'unavailable'
 
+    # Uncertainty-adjusted presentation
+    if resilience_score is not None:
+        if resilience_coverage == 100:
+            uncertainty_adjusted_score = resilience_score
+            uncertainty_level = 'Low'
+        else:
+            # Shrinkage toward neutral baseline (50.0) based on missing coverage
+            uncertainty_adjusted_score = round(
+                resilience_score * (resilience_coverage / 100.0) + 50.0 * (1.0 - resilience_coverage / 100.0),
+                2
+            )
+            uncertainty_level = 'Moderate' if resilience_coverage >= 75 else 'High'
+
+        presentation = {
+            'display_score': (
+                f"{resilience_score} (Coverage: {resilience_coverage}% - {uncertainty_level} Uncertainty)"
+                if resilience_coverage < 100 else f"{resilience_score}"
+            ),
+            'raw_score': resilience_score,
+            'adjusted_score': uncertainty_adjusted_score,
+            'coverage_pct': resilience_coverage,
+            'uncertainty_level': uncertainty_level,
+            'warning': (
+                f"Score is derived from partial evidence ({len(available_resilience)}/4 components). "
+                f"Unobserved metrics ({', '.join(missing_resilience)}) are shrunk toward neutral baseline ({uncertainty_adjusted_score} adjusted vs {resilience_score} raw)."
+            ) if missing_resilience else None
+        }
+    else:
+        uncertainty_adjusted_score = None
+        presentation = {
+            'display_score': 'Unavailable',
+            'raw_score': None,
+            'adjusted_score': None,
+            'coverage_pct': resilience_coverage,
+            'uncertainty_level': 'Unavailable',
+            'warning': 'Insufficient evidence to compute resilience score.'
+        }
+
+    # Determine top-level data_mode: 'seed_demo' | 'evidence_backed' | 'mixed'
+    evidence_sources = 0
+    seed_sources = 0
+
+    if fallback_used:
+        seed_sources += 1
+    elif selected is not None:
+        exp_comp = exposure_components.get(selected)
+        if exp_comp and exp_comp.get('evidence_id') is not None and not exp_comp.get('is_proxy'):
+            evidence_sources += 1
+        else:
+            seed_sources += 1
+
+    for comp in resilience_components.values():
+        if comp is not None:
+            if comp.get('evidence_id') is not None and not comp.get('is_proxy'):
+                evidence_sources += 1
+            elif comp.get('is_proxy') or 'seeded' in str(comp.get('source', '')).lower():
+                seed_sources += 1
+
+    if evidence_sources > 0 and seed_sources > 0:
+        data_mode = 'mixed'
+    elif evidence_sources > 0 and seed_sources == 0:
+        data_mode = 'evidence_backed'
+    elif seed_sources > 0 and evidence_sources == 0:
+        data_mode = 'seed_demo'
+    else:
+        data_mode = 'seed_demo'
+
     # Peer comparison (unchanged)
     peer_tickers = list(CompanyCommodityExposure.objects.filter(
         commodity=commodity, company__is_active=True,
@@ -230,6 +296,7 @@ def build_company_snapshot(company, commodity):
         exposure_score_status = 'unavailable'
 
     return {
+        'data_mode': data_mode,
         'exposure': {
             'status': ('provisional' if (selected or fallback_used) else 'unavailable'),
             'basis': 'Commodity Revenue Share' if fallback_used else selected,
@@ -248,11 +315,14 @@ def build_company_snapshot(company, commodity):
             'status': 'partial_evidence' if any(_metric_component(latest, name) for name in RESILIENCE_METRICS) else 'unavailable',
             'components': resilience_components,
             'score': resilience_score,
+            'raw_score': resilience_score,
+            'uncertainty_adjusted_score': uncertainty_adjusted_score,
             'score_status': resilience_status,
             'coverage_pct': resilience_coverage,
             'available_components': len(available_resilience),
             'required_components': len(resilience_components),
             'missing_components': missing_resilience,
+            'presentation': presentation,
         },
         'fundamentals': {name: observed(name) for name in FUNDAMENTAL_METRICS},
         'peer_comparison': peer_comparison,

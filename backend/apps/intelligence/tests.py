@@ -1,4 +1,3 @@
-
 """
 Tests untuk intelligence layer logic.
 """
@@ -147,10 +146,14 @@ class CompanySnapshotTests(TestCase):
 
         snapshot = build_company_snapshot(self.company, self.commodity)
 
+        self.assertEqual(snapshot['data_mode'], 'evidence_backed')
         self.assertEqual(snapshot['exposure']['score'], 80.0)
         self.assertIn('Pending Validation', snapshot['exposure']['score_status'])
         self.assertFalse(snapshot['exposure']['components']['Commodity Revenue Share']['is_proxy'])
         self.assertEqual(snapshot['resilience']['score'], 100.0)
+        self.assertEqual(snapshot['resilience']['raw_score'], 100.0)
+        self.assertEqual(snapshot['resilience']['uncertainty_adjusted_score'], 100.0)
+        self.assertEqual(snapshot['resilience']['presentation']['uncertainty_level'], 'Low')
         self.assertIn('Pending Validation', snapshot['resilience']['score_status'])
         self.assertEqual(snapshot['resilience']['coverage_pct'], 100)
         self.assertEqual(snapshot['resilience']['missing_components'], [])
@@ -158,10 +161,12 @@ class CompanySnapshotTests(TestCase):
 
     def test_missing_metrics_score_none_and_unavailable(self):
         snapshot = build_company_snapshot(self.company, self.commodity)
+        self.assertEqual(snapshot['data_mode'], 'seed_demo')
         self.assertIsNone(snapshot['exposure']['score'])
         self.assertEqual(snapshot['exposure']['score_status'], 'unavailable')
         self.assertIsNone(snapshot['resilience']['score'])
         self.assertEqual(snapshot['resilience']['score_status'], 'unavailable')
+        self.assertEqual(snapshot['resilience']['presentation']['uncertainty_level'], 'Unavailable')
 
     def test_fallback_to_seeded_fields_labeled_demo(self):
         CompanyCommodityExposure.objects.create(
@@ -179,6 +184,7 @@ class CompanySnapshotTests(TestCase):
 
         snapshot = build_company_snapshot(self.company, self.commodity)
 
+        self.assertEqual(snapshot['data_mode'], 'seed_demo')
         self.assertEqual(snapshot['exposure']['score'], 85.0)
         self.assertIn('demo fallback', snapshot['exposure']['score_status'])
         rev = snapshot['exposure']['components']['Commodity Revenue Share']
@@ -189,6 +195,37 @@ class CompanySnapshotTests(TestCase):
         self.assertIn('partial evidence', snapshot['resilience']['score_status'].lower())
         self.assertEqual(snapshot['resilience']['coverage_pct'], 75)
         self.assertEqual(snapshot['resilience']['missing_components'], ['Sales Diversification HHI'])
+        self.assertEqual(snapshot['resilience']['presentation']['uncertainty_level'], 'Moderate')
+        # 100.0 * 0.75 + 50.0 * 0.25 = 87.5
+        self.assertEqual(snapshot['resilience']['uncertainty_adjusted_score'], 87.5)
         der = snapshot['resilience']['components']['DER']
         self.assertTrue(der['is_proxy'])
         self.assertIn('seeded', der['source'])
+
+    def test_mixed_data_mode(self):
+        # Seeded exposure
+        CompanyCommodityExposure.objects.create(
+            company=self.company, commodity=self.commodity, revenue_share_pct=75.0
+        )
+        # Observed evidence-backed resilience metric
+        log = self._log()
+        self._metric('DER', 0.25, 'ratio', log, self.commodity)
+        snapshot = build_company_snapshot(self.company, self.commodity)
+        self.assertEqual(snapshot['data_mode'], 'mixed')
+
+    def test_pure_seed_data_mode(self):
+        CompanyCommodityExposure.objects.create(
+            company=self.company, commodity=self.commodity, revenue_share_pct=90.0
+        )
+        CompanyResilience.objects.create(
+            company=self.company,
+            debt_to_equity=0.4,
+            ebitda_margin=25.0,
+            as_of_date='2025-12-31',
+        )
+        snapshot = build_company_snapshot(self.company, self.commodity)
+        self.assertEqual(snapshot['data_mode'], 'seed_demo')
+        self.assertEqual(snapshot['resilience']['coverage_pct'], 50)
+        # 80.0 * 0.5 + 50.0 * 0.5 = 65.0
+        self.assertEqual(snapshot['resilience']['uncertainty_adjusted_score'], 65.0)
+        self.assertEqual(snapshot['resilience']['presentation']['uncertainty_level'], 'High')

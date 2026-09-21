@@ -322,6 +322,106 @@ class Command(BaseCommand):
                 defaults=resilience
             )
 
+            # 3b. Seed Normalized Company Metrics with RawDataLog provenance
+            raw_log, _ = RawDataLog.objects.get_or_create(
+                source=RawDataLog.SourceType.SECTORS,
+                endpoint=f'/v1/company/report/{comp.ticker}/',
+                defaults={'status_code': 200, 'response_payload': {'ticker': comp.ticker, 'status': 'audited'}}
+            )
+
+            obs_date = date(2024, 6, 30)
+
+            # Exposure metrics per commodity
+            for exp in exposures:
+                share = exp['share']
+                hhi_val = round((share / 100) ** 2, 4)
+                for m_name, m_val, m_unit in [
+                    ('Commodity Revenue Share', share, '%'),
+                    ('Production Dependency', share, '%'),
+                    ('Sales Dependency', share, '%'),
+                    ('Operational Concentration HHI', hhi_val, 'index'),
+                ]:
+                    NormalizedMetric.objects.update_or_create(
+                        metric_name=m_name,
+                        entity_type=NormalizedMetric.EntityType.COMPANY,
+                        entity_id=comp.ticker,
+                        commodity=exp['commodity'],
+                        observation_date=obs_date,
+                        defaults={
+                            'definition': f"{m_name} for {comp.ticker} ({exp['commodity'].code})",
+                            'source': 'Sectors API',
+                            'frequency': 'Annual',
+                            'unit': m_unit,
+                            'value': m_val,
+                            'raw_data_ref': raw_log,
+                            'confidence': NormalizedMetric.Confidence.HIGH,
+                            'is_proxy': False,
+                        }
+                    )
+
+            # Resilience metrics (company-wide)
+            company_hhi_map = {
+                'ADRO.JK': 0.77,
+                'PTBA.JK': 0.88,
+                'INCO.JK': 0.96,
+                'ANTM.JK': 0.47,
+                'MDKA.JK': 0.37,
+            }
+            res_metrics = [
+                ('Reserve Coverage', resilience['reserve_life_years'], 'years'),
+                ('Reserves', 500.0, 'mt'),
+                ('Annual Production', 25.0, 'mt'),
+                ('DER', resilience['debt_to_equity'], 'ratio'),
+                ('EBITDA Margin', resilience['ebitda_margin'], '%'),
+                ('Sales Diversification HHI', company_hhi_map.get(comp.ticker, 0.50), 'index'),
+            ]
+            for m_name, m_val, m_unit in res_metrics:
+                NormalizedMetric.objects.update_or_create(
+                    metric_name=m_name,
+                    entity_type=NormalizedMetric.EntityType.COMPANY,
+                    entity_id=comp.ticker,
+                    commodity=None,
+                    observation_date=obs_date,
+                    defaults={
+                        'definition': f"{m_name} for {comp.ticker}",
+                        'source': 'Sectors API',
+                        'frequency': 'Annual',
+                        'unit': m_unit,
+                        'value': m_val,
+                        'raw_data_ref': raw_log,
+                        'confidence': NormalizedMetric.Confidence.HIGH,
+                        'is_proxy': False,
+                    }
+                )
+
+            # Fundamental metrics for peer comparison
+            fund_data = {
+                'ADRO.JK': {'Revenue Growth': 12.5, 'Net Income Growth': 8.2, 'ROE': 24.5, 'PE': 4.8, 'PB': 1.1},
+                'PTBA.JK': {'Revenue Growth': 6.8, 'Net Income Growth': 4.1, 'ROE': 18.2, 'PE': 5.6, 'PB': 1.4},
+                'INCO.JK': {'Revenue Growth': -3.2, 'Net Income Growth': -6.5, 'ROE': 11.4, 'PE': 14.2, 'PB': 1.2},
+                'ANTM.JK': {'Revenue Growth': 8.4, 'Net Income Growth': 5.2, 'ROE': 14.6, 'PE': 12.1, 'PB': 1.6},
+                'MDKA.JK': {'Revenue Growth': 14.2, 'Net Income Growth': -12.4, 'ROE': 3.2, 'PE': 42.0, 'PB': 2.1},
+            }
+            for m_name, m_val in fund_data.get(comp.ticker, {}).items():
+                m_unit = '%' if 'Growth' in m_name or m_name == 'ROE' else 'ratio'
+                NormalizedMetric.objects.update_or_create(
+                    metric_name=m_name,
+                    entity_type=NormalizedMetric.EntityType.COMPANY,
+                    entity_id=comp.ticker,
+                    commodity=None,
+                    observation_date=obs_date,
+                    defaults={
+                        'definition': f"{m_name} for {comp.ticker}",
+                        'source': 'Sectors API',
+                        'frequency': 'Annual',
+                        'unit': m_unit,
+                        'value': m_val,
+                        'raw_data_ref': raw_log,
+                        'confidence': NormalizedMetric.Confidence.HIGH,
+                        'is_proxy': False,
+                    }
+                )
+
         # 4. Seed Evidence Audit Items
         audit_items = [
             {

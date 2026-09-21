@@ -65,6 +65,8 @@ class CommodityApiTests(TestCase):
         self.assertEqual(preview.status_code, status.HTTP_200_OK)
         self.assertAlmostEqual(preview.data['adjusted_value'], 5.5)
         self.assertIsNone(preview.data['estimated_price_impact_pct'])
+        self.assertTrue(preview.data['is_deprecated'])
+        self.assertIn('guardrail', preview.data)
         invalid = self.client.post(f'/api/v1/commodities/{self.commodity.id}/scenario-preview/',
             {'metric_name': 'China Coal Imports', 'shock_pct': 10}, format='json')
         self.assertEqual(invalid.status_code, status.HTTP_400_BAD_REQUEST)
@@ -72,6 +74,25 @@ class CommodityApiTests(TestCase):
         readiness = self.client.get(f'/api/v1/commodities/{self.commodity.id}/quant-readiness/')
         self.assertEqual(readiness.data['status'], 'blocked')
         self.assertEqual(readiness.data['price_periods'], 0)
+
+    def test_driver_map_rejects_low_or_negligible_correlation(self):
+        # Driver with correlation_score but confidence='Low' or negligible score < 0.10
+        driver = CommodityDriver.objects.create(
+            commodity=self.commodity,
+            name='China GDP Growth',
+            driver_type=CommodityDriver.DriverType.MACRO,
+            correlation_score=0.04,
+            confidence='Low',
+        )
+        response = self.client.get(f'/api/v1/commodities/{self.commodity.id}/intelligence/').data
+        self.assertEqual(response['status'], 'hypotheses_not_validated')
+
+        # Now update to Medium confidence and score >= 0.10
+        driver.correlation_score = 0.65
+        driver.confidence = 'Medium'
+        driver.save()
+        response = self.client.get(f'/api/v1/commodities/{self.commodity.id}/intelligence/').data
+        self.assertEqual(response['status'], 'preliminary_correlation')
 
     def test_quant_gate_needs_twelve_consistent_periods(self):
         log = RawDataLog.objects.create(source='World Bank', endpoint='/sample', status_code=200)
@@ -90,4 +111,17 @@ class CommodityApiTests(TestCase):
         url = f'/api/v1/commodities/{self.commodity.id}/quant-readiness/'
         self.assertEqual(self.client.get(url).data['status'], 'blocked')
         NormalizedMetric.objects.filter(frequency='Monthly').update(frequency='Annual')
-        self.assertEqual(self.client.get(url).data['status'], 'ready_for_screening')
+        # 1 driver out of 3 ready -> partial_ready
+        self.assertEqual(self.client.get(url).data['status'], 'partial_ready')
+
+        # Add remaining 2 drivers for COAL to make all ready
+        for i in range(12):
+            when = date(2027 + i, 12, 31)
+            for name in ['Indonesia Coal Production', 'China Coal Imports']:
+                NormalizedMetric.objects.create(
+                    metric_name=name, definition=name,
+                    entity_type='Commodity', entity_id='COAL', source='World Bank',
+                    frequency='Annual', unit='%', observation_date=when,
+                    transformation='YoY %', value=3, raw_data_ref=log
+                )
+        self.assertEqual(self.client.get(url).data['status'], 'ready')
