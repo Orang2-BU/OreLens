@@ -18,6 +18,8 @@ Model `Scenario`, `ScenarioInput`, dan `ScenarioResult` beserta endpoint baca su
 
 `POST /api/v1/scenarios/{id}/run/` menyimpan input dan result setelah memvalidasi driver yang diizinkan, evidence HTTP 200, dan shock -100% sampai 100%. Correlation bukan sensitivity coefficient. Sampai regression coefficient tervalidasi tersedia, result memakai methodology `Arithmetic preview`, sementara `estimated_price_impact_pct` dan `estimated_new_price` bernilai null. Semua output menyertakan referensi `NormalizedMetric` dan `RawDataLog` pada catatan input. Ini belum memakai beta, volatilitas historis, confidence interval, atau vintage-aware backtest.
 
+P2 menambahkan validasi distribusi historis: minimal 12 perubahan antarperiode dengan frequency, unit, dan transformation yang sama; shock harus berada di rentang percentile 5–95. `ScenarioResult` memiliki `run_status` (`arithmetic_preview`, `preliminary_sensitivity`, `validated_sensitivity`) dan `run_metadata` berisi model version, evidence/raw-log IDs, observation window, jumlah observasi, historical shock range, coefficient source, confidence, correlation context, dan data coverage. Saat ini hanya `arithmetic_preview` yang dapat diterbitkan; dua status sensitivity disediakan untuk coefficient yang kelak lolos validation. Correlation positif/negatif/negligible hanya dicatat sebagai konteks dan tidak mengisi price impact. Setiap rerun arithmetic juga mengosongkan stale confidence interval.
+
 ## Kriteria sebelum interaksi aktif
 
 Data audit dan metodologi sensitivity tervalidasi, kontrak API input/output disepakati, validasi input tersedia, dan user dapat melihat sumber serta batasan hasil. UI mengikuti [UI Flow](../product/UI_FLOW.md).

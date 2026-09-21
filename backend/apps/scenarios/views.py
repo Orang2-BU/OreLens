@@ -2,12 +2,23 @@ from rest_framework import viewsets, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db import transaction
+import math
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Scenario, ScenarioInput, ScenarioResult
 from .serializers import ScenarioSerializer, ScenarioInputSerializer, ScenarioResultSerializer
 from apps.evidence.models import NormalizedMetric
 from apps.intelligence.commodity_snapshot import DRIVERS
+from apps.commodities.models import CommodityDriver
+
+
+def _percentile(values, percentile):
+    ordered = sorted(values)
+    position = (len(ordered) - 1) * percentile
+    lower = int(position)
+    upper = min(lower + 1, len(ordered) - 1)
+    weight = position - lower
+    return ordered[lower] * (1 - weight) + ordered[upper] * weight
 
 
 @extend_schema_view(
@@ -32,17 +43,49 @@ class ScenarioViewSet(viewsets.ReadOnlyModelViewSet):
             shock_pct = float(shock_pct)
         except (TypeError, ValueError):
             return Response({'detail': 'shock_pct must be numeric.'}, status=status.HTTP_400_BAD_REQUEST)
-        if shock_pct < -100 or shock_pct > 100:
+        if not math.isfinite(shock_pct) or shock_pct < -100 or shock_pct > 100:
             return Response({'detail': 'shock_pct must be between -100 and 100.'}, status=status.HTTP_400_BAD_REQUEST)
-        allowed = {item[1] for item in DRIVERS.get(scenario.commodity.code, [])}
-        if metric_name not in allowed:
+        driver_spec = next((item for item in DRIVERS.get(scenario.commodity.code, []) if item[1] == metric_name), None)
+        if driver_spec is None:
             return Response({'detail': 'Metric is not an approved driver for this commodity.'}, status=status.HTTP_400_BAD_REQUEST)
-        metric = NormalizedMetric.objects.filter(
-            metric_name=metric_name, raw_data_ref__status_code=200,
-        ).order_by('-observation_date', '-id').first()
+        _, _, entity_type, entity_id = driver_spec
+        history = NormalizedMetric.objects.filter(
+            metric_name=metric_name, entity_type=entity_type, entity_id=entity_id,
+            raw_data_ref__status_code=200,
+        ).select_related('raw_data_ref').order_by('observation_date', 'id')
+        metric = history.last()
         if metric is None:
             return Response({'detail': 'Metric has no traceable evidence.'}, status=status.HTTP_400_BAD_REQUEST)
+        history = list(history.filter(frequency=metric.frequency, unit=metric.unit, transformation=metric.transformation))
+        changes = [(float(current.value) - float(previous.value)) / abs(float(previous.value)) * 100
+                   for previous, current in zip(history, history[1:]) if previous.value != 0]
+        if len(changes) < 12:
+            return Response({'detail': 'At least 12 historical changes are required to validate shock range.'}, status=status.HTTP_400_BAD_REQUEST)
+        shock_min, shock_max = _percentile(changes, .05), _percentile(changes, .95)
+        if not shock_min <= shock_pct <= shock_max:
+            return Response({'detail': f'shock_pct must be within historical p05-p95 range [{shock_min:.4f}, {shock_max:.4f}].'}, status=status.HTTP_400_BAD_REQUEST)
         adjusted = float(metric.value) * (1 + shock_pct / 100)
+        driver = CommodityDriver.objects.filter(commodity=scenario.commodity, name=metric_name).first()
+        correlation = driver.correlation_score if driver else None
+        observations = driver.validation_details.get('observations', 0) if driver else 0
+        if correlation is None:
+            correlation_context = 'insufficient_history' if observations and observations < 12 else 'unavailable'
+        elif abs(correlation) < .1:
+            correlation_context = 'negligible'
+        else:
+            correlation_context = 'positive' if correlation > 0 else 'negative'
+        metadata = {
+            'model_version': 'scenario-v0.2',
+            'normalized_metric_ids': [row.id for row in history],
+            'raw_data_log_ids': sorted({row.raw_data_ref_id for row in history}),
+            'observation_window': {'start': str(history[0].observation_date), 'end': str(history[-1].observation_date)},
+            'observations': len(history),
+            'historical_shock_range_pct': {'p05': round(shock_min, 4), 'p95': round(shock_max, 4)},
+            'coefficient_source': None, 'confidence': 'Unavailable',
+            'correlation_context': correlation_context,
+            'correlation_score': correlation,
+            'data_coverage_pct': 100,
+        }
         warning = 'Arithmetic preview only: no validated regression coefficient, so price impact is not estimated.'
         with transaction.atomic():
             scenario.inputs.all().delete()
@@ -55,8 +98,12 @@ class ScenarioViewSet(viewsets.ReadOnlyModelViewSet):
                 scenario=scenario,
                 defaults={'estimated_price_impact_pct': None,
                           'estimated_new_price': None,
+                          'confidence_interval_lower': None,
+                          'confidence_interval_upper': None,
                           'methodology': 'Arithmetic preview',
-                          'warnings': warning},
+                          'warnings': warning,
+                          'run_status': ScenarioResult.RunStatus.ARITHMETIC,
+                          'run_metadata': metadata},
             )
         return Response(ScenarioSerializer(scenario).data)
 

@@ -1,7 +1,7 @@
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
-from apps.commodities.models import Commodity
+from apps.commodities.models import Commodity, CommodityDriver
 from apps.scenarios.models import Scenario, ScenarioInput, ScenarioResult
 from apps.evidence.models import RawDataLog, NormalizedMetric
 
@@ -67,9 +67,12 @@ class ScenarioApiTests(TestCase):
 
     def test_run_scenario_persists_evidence_backed_arithmetic_result(self):
         log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
-        metric = NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
-            entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
-            observation_date='2025-12-31', value=5, raw_data_ref=log)
+        metric = None
+        for year in range(2012, 2026):
+            metric = NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+                entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+                transformation='YoY %', observation_date=f'{year}-12-31',
+                value=100 * (1.1 ** (year - 2012)), raw_data_ref=log)
         response = self.client.post(f'/api/v1/scenarios/{self.scenario.id}/run/',
             {'metric_name': 'China GDP Growth', 'shock_pct': 10}, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -77,5 +80,51 @@ class ScenarioApiTests(TestCase):
         result = ScenarioResult.objects.get(scenario=self.scenario)
         self.assertIsNone(result.estimated_price_impact_pct)
         self.assertIsNone(result.estimated_new_price)
+        self.assertIsNone(result.confidence_interval_lower)
+        self.assertIsNone(result.confidence_interval_upper)
         self.assertIn('Arithmetic preview', result.methodology)
         self.assertIn(str(metric.id), result.warnings + self.scenario.inputs.first().notes)
+        self.assertEqual(result.run_status, 'arithmetic_preview')
+        self.assertEqual(result.run_metadata['model_version'], 'scenario-v0.2')
+        self.assertEqual(result.run_metadata['observations'], 14)
+        self.assertEqual(result.run_metadata['correlation_context'], 'unavailable')
+        self.assertEqual(len(result.run_metadata['normalized_metric_ids']), 14)
+
+    def test_run_rejects_insufficient_history_and_outlier_shock(self):
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
+        for year in range(2020, 2025):
+            NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+                entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+                transformation='YoY %', observation_date=f'{year}-12-31', value=year, raw_data_ref=log)
+        url = f'/api/v1/scenarios/{self.scenario.id}/run/'
+        response = self.client.post(url, {'metric_name': 'China GDP Growth', 'shock_pct': 1}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        NormalizedMetric.objects.all().delete()
+        for year in range(2012, 2026):
+            NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+                entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+                transformation='YoY %', observation_date=f'{year}-12-31',
+                value=100 * (1.1 ** (year - 2012)), raw_data_ref=log)
+        response = self.client.post(url, {'metric_name': 'China GDP Growth', 'shock_pct': 50}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_correlation_context_does_not_become_price_coefficient(self):
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
+        for year in range(2012, 2026):
+            NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+                entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+                transformation='YoY %', observation_date=f'{year}-12-31',
+                value=100 * (1.1 ** (year - 2012)), raw_data_ref=log)
+        driver = CommodityDriver.objects.create(commodity=self.commodity, name='China GDP Growth',
+            description='test', source='World Bank', correlation_score=.6,
+            validation_details={'observations': 14})
+        url = f'/api/v1/scenarios/{self.scenario.id}/run/'
+        for score, context in [(.6, 'positive'), (-.6, 'negative'), (.01, 'negligible'), (None, 'insufficient_history')]:
+            driver.correlation_score = score
+            driver.validation_details = {'observations': 5 if score is None else 14}
+            driver.save(update_fields=['correlation_score', 'validation_details'])
+            response = self.client.post(url, {'metric_name': 'China GDP Growth', 'shock_pct': 10}, format='json')
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            result = ScenarioResult.objects.get(scenario=self.scenario)
+            self.assertEqual(result.run_metadata['correlation_context'], context)
+            self.assertIsNone(result.estimated_price_impact_pct)

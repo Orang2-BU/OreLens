@@ -42,6 +42,8 @@ Selesai bila setiap insight memiliki input, periode, sumber, confidence, status 
 - [ ] Hanya rilis driver importance/bobot numerik tervalidasi bila stabilitas dan cakupan memadai; nilai saat ini tetap preliminary.
 - [x] Preview skenario deterministik (`POST /api/v1/commodities/{id}/scenario-preview/`) menghitung perubahan aritmetis satu driver teramati dari `metric_name` dan `shock_pct`; baseline/evidence/warning terlihat, dampak harga null. Tidak menyimpan scenario run.
 - [x] `POST /api/v1/scenarios/{id}/run/` memvalidasi driver/evidence dan range shock serta menyimpan input/result. Correlation tidak diperlakukan sebagai coefficient; tanpa regression coefficient tervalidasi, `estimated_price_impact_pct` dan `estimated_new_price` selalu null.
+- [x] P2 scenario safety: minimal 12 historical changes; shock dibatasi percentile 5–95; run metadata menyimpan model version, evidence/raw-log IDs, observation window, coefficient source, confidence, correlation context, dan coverage.
+- [x] Status run eksplisit tersedia: `arithmetic_preview`, `preliminary_sensitivity`, `validated_sensitivity`. Engine saat ini hanya menerbitkan arithmetic preview dan membersihkan stale price impact/confidence interval saat rerun.
 - [ ] Skenario sensitivitas production-ready baru boleh dijalankan setelah koefisien, volatilitas historis, unit, dan rentang input divalidasi.
 
 Selesai bila metodologi, sampel, baseline, dan hasil uji bisa direproduksi. Bobot final dan forecast tidak termasuk tahap awal.

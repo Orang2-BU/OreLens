@@ -38,6 +38,11 @@ class ScenarioInput(models.Model):
 
 
 class ScenarioResult(models.Model):
+    class RunStatus(models.TextChoices):
+        ARITHMETIC = 'arithmetic_preview', 'Arithmetic preview'
+        PRELIMINARY = 'preliminary_sensitivity', 'Preliminary sensitivity'
+        VALIDATED = 'validated_sensitivity', 'Validated sensitivity'
+
     scenario = models.OneToOneField(Scenario, related_name='result', on_delete=models.CASCADE)
     estimated_price_impact_pct = models.FloatField(null=True, blank=True, help_text='Estimated price change percentage; null without a validated coefficient')
     estimated_new_price = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
@@ -46,6 +51,8 @@ class ScenarioResult(models.Model):
     methodology = models.CharField(max_length=100, default='Sensitivity Analysis (Preliminary)')
     computed_at = models.DateTimeField(auto_now=True)
     warnings = models.TextField(blank=True, help_text='Caveats about score pending validation')
+    run_status = models.CharField(max_length=40, choices=RunStatus.choices, default=RunStatus.ARITHMETIC)
+    run_metadata = models.JSONField(default=dict, blank=True)
 
     class Meta:
         ordering = ['-computed_at']

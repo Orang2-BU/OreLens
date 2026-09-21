@@ -18,7 +18,7 @@ OK
 System check identified no issues
 ```
 
-The full backend suite now passes **63/63 tests** after P0/P1 improvements.
+The full backend suite now passes **65/65 tests** after P0/P1/P2 improvements.
 
 ## Dummy data used
 
