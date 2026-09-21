@@ -89,6 +89,8 @@ class CompanyApiTests(TestCase):
         self.assertEqual(self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/').status_code, 400)
 
     def test_intelligence_exposure_is_commodity_scoped_and_missing_is_not_zero(self):
+        self.exposure.revenue_share_pct = None
+        self.exposure.save()
         nickel = Commodity.objects.create(code='NICKEL', name='Nickel', benchmark_unit='USD/mt')
         log = RawDataLog.objects.create(source='Sectors', endpoint='/company', status_code=200)
         for commodity, name, value in [
@@ -105,7 +107,8 @@ class CompanyApiTests(TestCase):
         self.assertEqual(coal['exposure']['basis'], 'Production Dependency')
         self.assertEqual(coal['exposure']['analysis_confidence'], 'Low')
         self.assertTrue(coal['exposure']['proxy_used'])
-        self.assertIsNone(coal['exposure']['score'])
+        self.assertEqual(coal['exposure']['score'], 60.0)
+        self.assertIn('Pending Validation', coal['exposure']['score_status'])
         self.assertIsNone(coal['resilience']['components']['Reserve Coverage'])
         nickel_data = self.client.get(f'/api/v1/companies/{self.company.id}/intelligence/?commodity=NICKEL').data
         self.assertEqual(nickel_data['exposure']['basis'], 'Commodity Revenue Share')

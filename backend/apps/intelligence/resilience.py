@@ -1,3 +1,4 @@
+
 """
 Company resilience calculation logic.
 Resilience bukan kebalikan exposure - dimensi terpisah.
@@ -9,6 +10,7 @@ def calculate_resilience_score(
     debt_to_equity: float = None,
     ebitda_margin: float = None,
     sales_diversification_hhi: float = None,
+    allow_partial: bool = False,
 ) -> tuple[float | None, str]:
     """
     Calculate preliminary resilience score.
@@ -16,6 +18,9 @@ def calculate_resilience_score(
     Returns: (score, status_message)
 
     Note: Bobot & threshold final menunggu backtest.
+    If ``allow_partial`` is True, a score is produced from the available
+    components and scaled to the 0-100 range so the demo can surface
+    partial evidence.
     """
     components = []
 
@@ -55,10 +60,17 @@ def calculate_resilience_score(
         else:
             components.append(5)
 
-    if len(components) != 4:
+    if len(components) == 0:
+        return (None, 'Unavailable - insufficient metrics')
+
+    if len(components) != 4 and not allow_partial:
         return (None, 'Unavailable - insufficient metrics')
 
     score = sum(components)
     status = 'Pending Validation - preliminary methodology'
+    if len(components) != 4:
+        # Scale partial component scores to the 0-100 range.
+        score = score * 4 / len(components)
+        status = 'Pending Validation - preliminary methodology (partial evidence)'
 
     return (round(score, 2), status)

@@ -22,8 +22,8 @@ Selesai bila observasi nyata dapat ditelusuri sampai response sumber dan audit m
 
 ## Tahap 3 — company/commodity intelligence
 
-- [x] Read path exposure per komoditas: hanya observasi ber-provenance dan terhubung ke komoditas; revenue share diprioritaskan, production/sales dependency diberi label proxy dan confidence analisis Low. Missing tetap `null`. Skor numerik final belum dihitung.
-- [x] Read path resilience terpisah: komponen reserve coverage, stabilitas produksi, diversifikasi, DER, ROE ditampilkan bila ada evidence; score tetap `null`.
+- [x] Read path exposure per komoditas: hanya observasi ber-provenance dan terhubung ke komoditas; revenue share diprioritaskan, production/sales dependency diberi label proxy dan confidence analisis Low. Missing tetap `null`. `calculate_exposure_score` sekarang dijalankan di atas evidence/seed; skor diberi status "Pending Validation - preliminary methodology" dan fallback seed diberi label demo.
+- [x] Read path resilience terpisah: komponen reserve coverage, leverage (DER), profitability (EBITDA Margin), dan diversification (Sales Diversification HHI) ditampilkan bila ada evidence; missing tetap `null`. `calculate_resilience_score` dijalankan secara parsial bila komponen tersedia; skor diberi status "Pending Validation - preliminary methodology (partial evidence)" atau `unavailable`, dan fallback seed diberi label demo.
 - [x] Driver map per commodity memakai metric supply/demand/macro dari dictionary dan hanya menampilkan observasi ber-provenance; kategori event/policy kualitatif. Semua `importance` null dan status hipotesis, bukan hasil korelasi seed.
 - [x] Snapshot fundamental per perusahaan dari metric Revenue Growth, Net Income Growth, ROE, DER, PE, PB ber-provenance; missing `null`.
 - [x] Peer rank kandidat memakai company universe per commodity dan hanya muncul bila ≥3 perusahaan punya metric, periode, frekuensi, unit, dan transformasi yang sama. Rank numerik bukan kualitas investasi; validitas peer group/data sumber masih perlu audit.
