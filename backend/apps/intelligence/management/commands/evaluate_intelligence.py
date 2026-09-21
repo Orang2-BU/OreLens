@@ -1,4 +1,5 @@
 import json
+from django.core.serializers.json import DjangoJSONEncoder
 from datetime import datetime
 from django.core.management.base import BaseCommand
 from apps.companies.models import Company, CompanyCommodityExposure
@@ -113,7 +114,7 @@ class Command(BaseCommand):
                         'resilience_status': res['score_status'],
                         'uncertainty_level': res.get('presentation', {}).get('uncertainty_level', 'High'),
                         'missing_components': res['missing_components'],
-                        'components': {k: v['value'] if v else None for k, v in res['components'].items()},
+                        'components': {k: float(v['value']) if (v and v['value'] is not None) else None for k, v in res['components'].items()},
                     }
 
                     # Classify into quadrant
@@ -141,7 +142,7 @@ class Command(BaseCommand):
                 evaluation_data['companies'][comp.ticker] = comp_eval
 
         if output_json:
-            self.stdout.write(json.dumps(evaluation_data, indent=2))
+            self.stdout.write(json.dumps(evaluation_data, indent=2, cls=DjangoJSONEncoder))
             return
 
         # Human-Readable Formatting
