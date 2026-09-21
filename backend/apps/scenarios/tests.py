@@ -3,6 +3,7 @@ from rest_framework.test import APIClient
 from rest_framework import status
 from apps.commodities.models import Commodity
 from apps.scenarios.models import Scenario, ScenarioInput, ScenarioResult
+from apps.evidence.models import RawDataLog, NormalizedMetric
 
 
 class ScenarioApiTests(TestCase):
@@ -63,3 +64,17 @@ class ScenarioApiTests(TestCase):
         response = self.client.get('/api/v1/scenario-results/')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['count'], 1)
+
+    def test_run_scenario_persists_evidence_backed_arithmetic_result(self):
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/gdp', status_code=200)
+        metric = NormalizedMetric.objects.create(metric_name='China GDP Growth', definition='GDP growth',
+            entity_type='Macro', entity_id='CHN', source='World Bank', frequency='Annual', unit='%',
+            observation_date='2025-12-31', value=5, raw_data_ref=log)
+        response = self.client.post(f'/api/v1/scenarios/{self.scenario.id}/run/',
+            {'metric_name': 'China GDP Growth', 'shock_pct': 10}, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(ScenarioInput.objects.filter(scenario=self.scenario).count(), 1)
+        result = ScenarioResult.objects.get(scenario=self.scenario)
+        self.assertEqual(result.estimated_price_impact_pct, 0)
+        self.assertIn('Arithmetic preview', result.methodology)
+        self.assertIn(str(metric.id), result.warnings + self.scenario.inputs.first().notes)

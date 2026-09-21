@@ -1,4 +1,5 @@
 from apps.evidence.models import NormalizedMetric
+from apps.commodities.models import CommodityDriver
 
 
 # Hypotheses from DATA_DICTIONARY.md, not statistically validated driver weights.
@@ -25,15 +26,18 @@ def build_driver_map(commodity):
             metric_name=name, entity_type=entity_type, entity_id=entity_id,
             raw_data_ref__status_code=200,
         ).order_by('-observation_date', '-id').first()
+        persisted = CommodityDriver.objects.filter(commodity=commodity, name=name).first()
         drivers.append({
             'category': category, 'metric': name,
             'status': 'observed_context' if row else 'unavailable',
             'latest': ({'value': row.value, 'unit': row.unit, 'date': row.observation_date,
                         'source': row.source, 'confidence': row.confidence,
                         'is_proxy': row.is_proxy, 'evidence_id': row.id} if row else None),
-            'importance': None,
+            'importance': abs(persisted.correlation_score) if persisted and persisted.correlation_score is not None else None,
+            'correlation_score': persisted.correlation_score if persisted else None,
+            'correlation_confidence': persisted.confidence if persisted else None,
         })
-    return {'status': 'hypotheses_not_validated', 'drivers': drivers,
+    return {'status': 'preliminary_correlation' if any(item['correlation_score'] is not None for item in drivers) else 'hypotheses_not_validated', 'drivers': drivers,
             'event_policy': {'status': 'qualitative_only', 'importance': None}}
 
 

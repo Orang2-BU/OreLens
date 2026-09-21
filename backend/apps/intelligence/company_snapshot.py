@@ -233,7 +233,7 @@ def build_company_snapshot(company, commodity):
                 if exposure_score is not None
                 else (('Low' if selected != 'Commodity Revenue Share' else exposure_components[selected]['confidence']) if selected else 'Unavailable')
             ),
-            'proxy_used': bool(selected and selected != 'Commodity Revenue Share'),
+            'proxy_used': bool(fallback_used or (selected and selected != 'Commodity Revenue Share')),
             'components': exposure_components,
             'score': exposure_score,
             'score_status': exposure_score_status,

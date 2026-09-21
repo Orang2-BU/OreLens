@@ -33,9 +33,11 @@ Selesai bila setiap insight memiliki input, periode, sumber, confidence, status 
 ## Tahap 4 — quant validation dan skenario
 
 - [x] Gate kesiapan quant per commodity memeriksa seri harga/driver ber-provenance, periode+frekuensi yang sama, minimal 12 pasangan, dan tanggal fetch driver tidak melewati periode target. Di DB lokal empat commodity berstatus `blocked`; ini belum membuktikan bebas look-ahead karena tanggal publikasi/vintage belum tersedia.
-- [ ] Setelah data aktual cukup: selaraskan unit/transformasi, verifikasi vintage, lakukan correlation screening, regression, rolling/regime checks, dan backtest out-of-sample terhadap baseline sederhana.
-- [ ] Hanya rilis driver importance/bobot numerik bila stabilitas dan cakupan memadai; jika gagal, sajikan sebagai konteks kualitatif.
+- [x] Correlation screening Pearson tersedia melalui `python manage.py screen_driver_correlations [--commodity CODE]`; hanya memasangkan `NormalizedMetric` Commodity Price dan driver pada tanggal sama, menyimpan `correlation_score` dan confidence ke `CommodityDriver`. Driver map memakai `abs(correlation_score)` sebagai importance preliminary bila tersedia.
+- [ ] Setelah data aktual cukup: selaraskan unit/transformasi, verifikasi vintage, lakukan regression, rolling/regime checks, dan backtest out-of-sample terhadap baseline sederhana.
+- [ ] Hanya rilis driver importance/bobot numerik tervalidasi bila stabilitas dan cakupan memadai; nilai saat ini tetap preliminary.
 - [x] Preview skenario deterministik (`POST /api/v1/commodities/{id}/scenario-preview/`) menghitung perubahan aritmetis satu driver teramati dari `metric_name` dan `shock_pct`; baseline/evidence/warning terlihat, dampak harga null. Tidak menyimpan scenario run.
-- [ ] Skenario sensitivitas terhadap harga/analisis baru boleh dijalankan setelah koefisien dan rentang input divalidasi.
+- [x] `POST /api/v1/scenarios/{id}/run/` memvalidasi driver/evidence dan range shock, menyimpan `ScenarioInput` serta `ScenarioResult`; memakai correlation bila tersedia, dan fallback ke arithmetic preview dengan warning eksplisit bila belum ada.
+- [ ] Skenario sensitivitas production-ready baru boleh dijalankan setelah koefisien, volatilitas historis, unit, dan rentang input divalidasi.
 
 Selesai bila metodologi, sampel, baseline, dan hasil uji bisa direproduksi. Bobot final dan forecast tidak termasuk tahap awal.

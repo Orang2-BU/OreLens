@@ -16,6 +16,8 @@ Model `Scenario`, `ScenarioInput`, dan `ScenarioResult` beserta endpoint baca su
 
 `POST /api/v1/commodities/{id}/scenario-preview/` dengan JSON `{"metric_name":"China GDP Growth","shock_pct":10}` kini memberi preview aritmetis pada driver yang punya evidence: `adjusted_value = baseline × (1 + shock_pct/100)`. Respons selalu `estimated_price_impact_pct: null` dan tidak menyimpan run. Ini bukan sensitivitas harga, forecast, atau validasi model.
 
+`POST /api/v1/scenarios/{id}/run/` menyimpan input dan result setelah memvalidasi driver yang diizinkan, evidence HTTP 200, dan shock -100% sampai 100%. Jika `CommodityDriver.correlation_score` tersedia, result memakai sensitivitas preliminary `correlation × shock`; jika belum, price impact disimpan sebagai 0 dengan methodology `Arithmetic preview` dan warning bahwa dampak harga tidak diestimasi. Semua output menyertakan referensi `NormalizedMetric` dan `RawDataLog` pada catatan input. Ini belum memakai beta, volatilitas historis, confidence interval, atau vintage-aware backtest.
+
 ## Kriteria sebelum interaksi aktif
 
 Data audit dan metodologi sensitivity tervalidasi, kontrak API input/output disepakati, validasi input tersedia, dan user dapat melihat sumber serta batasan hasil. UI mengikuti [UI Flow](../product/UI_FLOW.md).
