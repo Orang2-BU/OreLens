@@ -39,8 +39,8 @@ class ScenarioInput(models.Model):
 
 class ScenarioResult(models.Model):
     scenario = models.OneToOneField(Scenario, related_name='result', on_delete=models.CASCADE)
-    estimated_price_impact_pct = models.FloatField(help_text='Estimated price change percentage')
-    estimated_new_price = models.DecimalField(max_digits=14, decimal_places=4)
+    estimated_price_impact_pct = models.FloatField(null=True, blank=True, help_text='Estimated price change percentage; null without a validated coefficient')
+    estimated_new_price = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
     confidence_interval_lower = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
     confidence_interval_upper = models.DecimalField(max_digits=14, decimal_places=4, null=True, blank=True)
     methodology = models.CharField(max_length=100, default='Sensitivity Analysis (Preliminary)')

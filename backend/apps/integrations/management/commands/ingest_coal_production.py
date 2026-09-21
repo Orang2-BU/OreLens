@@ -9,7 +9,8 @@ from apps.evidence.models import DataAuditItem, NormalizedMetric, RawDataLog
 from apps.integrations.clients.worldbank import WorldBankClient
 
 
-METRIC = 'Indonesia Coal Production'
+METRIC = 'Indonesia Electricity from Coal Share'
+OLD_METRIC = 'Indonesia Coal Production'
 ENDPOINT = '/country/IDN/indicator/EG.ELC.COAL.ZS'
 DATE_RANGE = '2000:2024'
 
@@ -26,6 +27,11 @@ def ingest_coal_production(payload, raw_log):
         raise ValueError('No usable World Bank observations')
     coal = Commodity.objects.get(code='COAL')
     with transaction.atomic():
+        NormalizedMetric.objects.filter(metric_name=OLD_METRIC, source='World Bank').update(
+            metric_name=METRIC, is_proxy=True,
+            proxy_description='Electricity production from coal sources (% of total); not physical coal production volume.',
+        )
+        DataAuditItem.objects.filter(metric=OLD_METRIC, source='World Bank').update(metric=METRIC, proxy_required=True)
         for row in usable:
             observed = date(int(row['date']), 12, 31)
             NormalizedMetric.objects.update_or_create(
@@ -35,6 +41,8 @@ def ingest_coal_production(payload, raw_log):
                     'definition': 'Coal production (% of total), World Bank indicator EG.ELC.COAL.ZS',
                     'frequency': 'Annual', 'unit': '% of total', 'original_unit': '%',
                     'transformation': 'None', 'priority': 'High', 'confidence': 'Medium',
+                    'is_proxy': True,
+                    'proxy_description': 'Electricity production from coal sources (% of total); not physical coal production volume.',
                     'value': Decimal(str(row['value'])), 'raw_data_ref': raw_log,
                 },
             )
@@ -47,16 +55,17 @@ def ingest_coal_production(payload, raw_log):
                 'frequency': 'Annual', 'unit': '% of total',
                 'missing_values': f'{missing}/{len(rows)} ({missing / len(rows):.1%})',
                 'historical_depth': f'{len(usable)} annual observations in {DATE_RANGE}',
+                'proxy_required': True,
                 'cost_rate_limit': 'Not verified',
-                'notes': 'Live API response; license/rate limit and analytics readiness pending verification. '
-                         'Commodity context for thermal coal (COAL), not validated for scoring.',
+                'notes': 'Live electricity-generation proxy; not Indonesia physical coal production. '
+                         'License/rate limit and analytics readiness pending verification.',
             },
         )
     return len(usable), missing
 
 
 class Command(BaseCommand):
-    help = 'Ingest audited Indonesia coal production observations from World Bank (2000-2024).'
+    help = 'Ingest Indonesia electricity-from-coal share proxy from World Bank (2000-2024).'
 
     def handle(self, *args, **options):
         payload = WorldBankClient().get_country_indicator('IDN', 'EG.ELC.COAL.ZS', DATE_RANGE)
@@ -67,4 +76,4 @@ class Command(BaseCommand):
             count, missing = ingest_coal_production(payload, raw_log)
         except (ValueError, TypeError, KeyError) as exc:
             raise CommandError(f'Invalid World Bank data: {exc}') from exc
-        self.stdout.write(self.style.SUCCESS(f'Coal Production: {count} observations, {missing} missing; upsert complete'))
+        self.stdout.write(self.style.SUCCESS(f'Electricity from coal share: {count} observations, {missing} missing; upsert complete'))

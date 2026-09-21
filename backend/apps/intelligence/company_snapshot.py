@@ -162,6 +162,9 @@ def build_company_snapshot(company, commodity):
         'EBITDA Margin': _resilience_component(ebitda_margin, ebitda_component),
         'Sales Diversification HHI': _resilience_component(sales_diversification_hhi, hhi_component),
     }
+    available_resilience = [name for name, component in resilience_components.items() if component is not None]
+    missing_resilience = [name for name, component in resilience_components.items() if component is None]
+    resilience_coverage = round(len(available_resilience) / len(resilience_components) * 100)
 
     resilience_score, resilience_status = calculate_resilience_score(
         reserve_coverage=reserve_coverage,
@@ -173,6 +176,9 @@ def build_company_snapshot(company, commodity):
 
     if resilience_score is not None and seeded_resilience:
         resilience_status += ' (demo fallback)'
+
+    if resilience_score is not None and missing_resilience:
+        resilience_status += f" - missing {', '.join(missing_resilience)}"
 
     if resilience_score is None:
         if any(v is not None for v in (reserve_coverage, debt_to_equity, ebitda_margin, sales_diversification_hhi)):
@@ -243,6 +249,10 @@ def build_company_snapshot(company, commodity):
             'components': resilience_components,
             'score': resilience_score,
             'score_status': resilience_status,
+            'coverage_pct': resilience_coverage,
+            'available_components': len(available_resilience),
+            'required_components': len(resilience_components),
+            'missing_components': missing_resilience,
         },
         'fundamentals': {name: observed(name) for name in FUNDAMENTAL_METRICS},
         'peer_comparison': peer_comparison,

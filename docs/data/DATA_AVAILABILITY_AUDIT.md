@@ -39,9 +39,9 @@ No production scoring should be finalized before this audit is substantially com
 
 Checked 2026-09-18 via `https://api.worldbank.org/v2/country/CHN/indicator/NY.GDP.MKTP.KD.ZG?format=json&date=2015%3A2025` (World Bank API). HTTP 200; 11 annual rows, 2015–2025; 0 null values (0/11); unit `%` (GDP growth, annual %); response `lastupdated: 2026-07-13`. Normalized as `Macro / CHN / China GDP Growth`, observation date at year-end, with raw-response reference. This is contextual demand evidence for Coal/Nickel/Copper, not commodity-specific causal evidence. License, precise rate limit, and analytics readiness remain unverified; no scoring weight is approved. Repeat ingest keeps 11 observations. Run: `cd backend && python manage.py ingest_china_gdp`.
 
-### Verified live sample — Indonesia coal-related production proxy
+### Verified live sample — Indonesia electricity-from-coal proxy
 
-Checked 2026-09-21 via World Bank indicator `EG.ELC.COAL.ZS` for Indonesia, 2000–2024. HTTP 200; 24 usable annual rows and 1 null; unit `% of total` (electricity production from coal sources), raw response linked. This is a **proxy**, not physical Indonesia coal production; it must not be interpreted as production volume. Run: `cd backend && python manage.py ingest_coal_production`.
+Checked 2026-09-21 via World Bank indicator `EG.ELC.COAL.ZS` for Indonesia, 2000–2024. HTTP 200; 24 usable annual rows and 1 null; unit `% of total` (electricity production from coal sources), raw response linked. Internal metric name is `Indonesia Electricity from Coal Share`, with `is_proxy = true`; it is not physical Indonesia coal production and is excluded from the supply-driver hypothesis named `Indonesia Coal Production`. Run: `cd backend && python manage.py ingest_coal_production`.
 
 | Field | Description |
 |---|---|

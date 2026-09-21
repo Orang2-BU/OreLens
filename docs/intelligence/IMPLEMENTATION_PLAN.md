@@ -24,6 +24,7 @@ Selesai bila observasi nyata dapat ditelusuri sampai response sumber dan audit m
 
 - [x] Read path exposure per komoditas: hanya observasi ber-provenance dan terhubung ke komoditas; revenue share diprioritaskan, production/sales dependency diberi label proxy dan confidence analisis Low. Missing tetap `null`. `calculate_exposure_score` sekarang dijalankan di atas evidence/seed; skor diberi status "Pending Validation - preliminary methodology" dan fallback seed diberi label demo.
 - [x] Read path resilience terpisah: komponen reserve coverage, leverage (DER), profitability (EBITDA Margin), dan diversification (Sales Diversification HHI) ditampilkan bila ada evidence; missing tetap `null`. `calculate_resilience_score` dijalankan secara parsial bila komponen tersedia; skor diberi status "Pending Validation - preliminary methodology (partial evidence)" atau `unavailable`, dan fallback seed diberi label demo.
+- [x] Resilience response menyertakan `coverage_pct`, jumlah komponen tersedia/wajib, dan `missing_components`; score parsial tidak boleh ditampilkan tanpa coverage/status tersebut.
 - [x] Driver map per commodity memakai metric supply/demand/macro dari dictionary dan hanya menampilkan observasi ber-provenance; kategori event/policy kualitatif. Semua `importance` null dan status hipotesis, bukan hasil korelasi seed.
 - [x] Snapshot fundamental per perusahaan dari metric Revenue Growth, Net Income Growth, ROE, DER, PE, PB ber-provenance; missing `null`.
 - [x] Peer rank kandidat memakai company universe per commodity dan hanya muncul bila ≥3 perusahaan punya metric, periode, frekuensi, unit, dan transformasi yang sama. Rank numerik bukan kualitas investasi; validitas peer group/data sumber masih perlu audit.
@@ -33,11 +34,11 @@ Selesai bila setiap insight memiliki input, periode, sumber, confidence, status 
 ## Tahap 4 — quant validation dan skenario
 
 - [x] Gate kesiapan quant per commodity memeriksa seri harga/driver ber-provenance, periode+frekuensi yang sama, minimal 12 pasangan, dan tanggal fetch driver tidak melewati periode target. Di DB lokal empat commodity berstatus `blocked`; ini belum membuktikan bebas look-ahead karena tanggal publikasi/vintage belum tersedia.
-- [x] Correlation screening Pearson tersedia melalui `python manage.py screen_driver_correlations [--commodity CODE]`; hanya memasangkan `NormalizedMetric` Commodity Price dan driver pada tanggal sama, menyimpan `correlation_score` dan confidence ke `CommodityDriver`. Driver map memakai `abs(correlation_score)` sebagai importance preliminary bila tersedia.
+- [x] Correlation screening Pearson tersedia melalui `python manage.py screen_driver_correlations [--commodity CODE]`; membutuhkan minimal 12 pasangan bertanggal sama, frekuensi konsisten, unit non-kosong/konsisten, transformasi return/YoY yang diizinkan, dan non-zero variance. Data yang tidak memenuhi syarat menghapus score menjadi null/Low.
 - [ ] Setelah data aktual cukup: selaraskan unit/transformasi, verifikasi vintage, lakukan regression, rolling/regime checks, dan backtest out-of-sample terhadap baseline sederhana.
 - [ ] Hanya rilis driver importance/bobot numerik tervalidasi bila stabilitas dan cakupan memadai; nilai saat ini tetap preliminary.
 - [x] Preview skenario deterministik (`POST /api/v1/commodities/{id}/scenario-preview/`) menghitung perubahan aritmetis satu driver teramati dari `metric_name` dan `shock_pct`; baseline/evidence/warning terlihat, dampak harga null. Tidak menyimpan scenario run.
-- [x] `POST /api/v1/scenarios/{id}/run/` memvalidasi driver/evidence dan range shock, menyimpan `ScenarioInput` serta `ScenarioResult`; memakai correlation bila tersedia, dan fallback ke arithmetic preview dengan warning eksplisit bila belum ada.
+- [x] `POST /api/v1/scenarios/{id}/run/` memvalidasi driver/evidence dan range shock serta menyimpan input/result. Correlation tidak diperlakukan sebagai coefficient; tanpa regression coefficient tervalidasi, `estimated_price_impact_pct` dan `estimated_new_price` selalu null.
 - [ ] Skenario sensitivitas production-ready baru boleh dijalankan setelah koefisien, volatilitas historis, unit, dan rentang input divalidasi.
 
 Selesai bila metodologi, sampel, baseline, dan hasil uji bisa direproduksi. Bobot final dan forecast tidak termasuk tahap awal.

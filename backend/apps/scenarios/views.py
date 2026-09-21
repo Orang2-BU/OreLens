@@ -7,7 +7,6 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 from .models import Scenario, ScenarioInput, ScenarioResult
 from .serializers import ScenarioSerializer, ScenarioInputSerializer, ScenarioResultSerializer
 from apps.evidence.models import NormalizedMetric
-from apps.commodities.models import CommodityDriver
 from apps.intelligence.commodity_snapshot import DRIVERS
 
 
@@ -44,11 +43,7 @@ class ScenarioViewSet(viewsets.ReadOnlyModelViewSet):
         if metric is None:
             return Response({'detail': 'Metric has no traceable evidence.'}, status=status.HTTP_400_BAD_REQUEST)
         adjusted = float(metric.value) * (1 + shock_pct / 100)
-        driver = CommodityDriver.objects.filter(commodity=scenario.commodity, name=metric_name).first()
-        correlation = driver.correlation_score if driver else None
-        impact = round(correlation * shock_pct, 4) if correlation is not None else 0.0
-        warning = ('Preliminary correlation sensitivity; not a forecast.' if correlation is not None
-                   else 'Arithmetic preview only: correlation is unavailable, so price impact is not estimated.')
+        warning = 'Arithmetic preview only: no validated regression coefficient, so price impact is not estimated.'
         with transaction.atomic():
             scenario.inputs.all().delete()
             ScenarioInput.objects.create(
@@ -58,9 +53,9 @@ class ScenarioViewSet(viewsets.ReadOnlyModelViewSet):
             )
             ScenarioResult.objects.update_or_create(
                 scenario=scenario,
-                defaults={'estimated_price_impact_pct': impact,
-                          'estimated_new_price': float(scenario.commodity.current_price) * (1 + impact / 100),
-                          'methodology': 'Correlation sensitivity (preliminary)' if correlation is not None else 'Arithmetic preview',
+                defaults={'estimated_price_impact_pct': None,
+                          'estimated_new_price': None,
+                          'methodology': 'Arithmetic preview',
                           'warnings': warning},
             )
         return Response(ScenarioSerializer(scenario).data)

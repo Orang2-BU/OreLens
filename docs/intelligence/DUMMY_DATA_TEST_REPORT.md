@@ -85,9 +85,9 @@ The tests created dummy `Commodity Price` and `Coal Supply` normalized observati
 
 Results:
 
-- Pearson correlation for `[1, 2, 3]` and `[2, 4, 6]`: `1.0`.
-- Three matched observations produced `correlation_score = 1.0`.
-- Confidence remained `Low` because the implementation requires at least 12 observations for Medium confidence.
+- Pearson helper for `[1, 2, 3]` and `[2, 4, 6]`: `1.0`.
+- Three matched untransformed observations are rejected for screening: `correlation_score = null`, confidence `Low`.
+- Twelve aligned, consistently annual, transformed observations produced `correlation_score = 1.0` and confidence `Medium`.
 - The calculated driver stored a reference to the latest `NormalizedMetric` through `CommodityDriver.evidence`.
 - Driver map does not use seed correlation values as evidence.
 
@@ -138,7 +138,7 @@ Results:
 - One `ScenarioInput` was persisted.
 - One `ScenarioResult` was persisted or updated.
 - Adjusted driver value: `5.5%`.
-- No correlation was available, so estimated price impact was `0`.
+- No validated regression coefficient was available, so estimated price impact and estimated new price were `null`.
 - Methodology: `Arithmetic preview`.
 - Warning explicitly stated that price impact was not estimated.
 - Scenario notes contained the `NormalizedMetric` ID and `RawDataLog` ID.
@@ -163,7 +163,7 @@ This confirms the fallback is explainable and does not present arithmetic adjust
 2. Partial resilience scoring is useful for UI/demo coverage, but the scaled score can look stronger than the evidence base; the status label must remain visible in the frontend.
 3. Correlation confidence is correctly kept Low below 12 matched observations.
 4. A driver can be persisted and linked to evidence, but a correlation is only meaningful after price and driver units/frequencies are validated.
-5. Scenario run currently uses `correlation × shock` only when a correlation exists. It does not yet use beta, volatility-based shock limits, confidence intervals, vintage dates, regression, or out-of-sample backtesting.
+5. Scenario run does not convert correlation into price sensitivity. Price-impact fields remain null until a validated coefficient exists; beta, volatility-based shock limits, confidence intervals, vintage dates, regression, and out-of-sample backtesting remain pending.
 6. The coal production ingest is explicitly a World Bank electricity-from-coal proxy, not physical coal production. It must remain labeled as a proxy in UI and audit outputs.
 
 ## Conclusion

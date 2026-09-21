@@ -2,6 +2,8 @@ from django.test import TestCase
 from apps.integrations.clients.base import BaseApiClient
 from apps.evidence.models import RawDataLog, NormalizedMetric, DataAuditItem
 from apps.integrations.management.commands.ingest_china_gdp import ingest_china_gdp
+from apps.integrations.management.commands.ingest_coal_production import ingest_coal_production
+from apps.commodities.models import Commodity
 
 
 class BaseApiClientTests(TestCase):
@@ -54,3 +56,19 @@ class ChinaGdpIngestTests(TestCase):
         self.assertEqual(NormalizedMetric.objects.count(), 1)
         self.assertEqual(NormalizedMetric.objects.get().raw_data_ref, log)
         self.assertEqual(DataAuditItem.objects.get().missing_values, '1/2 (50.0%)')
+
+
+class CoalProxyIngestTests(TestCase):
+    def test_metric_is_explicitly_labeled_proxy(self):
+        Commodity.objects.create(code='COAL', name='Coal', benchmark_unit='USD/mt')
+        log = RawDataLog.objects.create(source='World Bank', endpoint='/country/IDN/indicator/EG.ELC.COAL.ZS')
+        payload = [{}, [{
+            'indicator': {'id': 'EG.ELC.COAL.ZS'}, 'countryiso3code': 'IDN',
+            'date': '2023', 'value': 61.8,
+        }]]
+        self.assertEqual(ingest_coal_production(payload, log), (1, 0))
+        metric = NormalizedMetric.objects.get()
+        self.assertEqual(metric.metric_name, 'Indonesia Electricity from Coal Share')
+        self.assertTrue(metric.is_proxy)
+        self.assertIn('not physical coal production', metric.proxy_description)
+        self.assertTrue(DataAuditItem.objects.get().proxy_required)

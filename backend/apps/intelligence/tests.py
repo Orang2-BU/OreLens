@@ -152,6 +152,8 @@ class CompanySnapshotTests(TestCase):
         self.assertFalse(snapshot['exposure']['components']['Commodity Revenue Share']['is_proxy'])
         self.assertEqual(snapshot['resilience']['score'], 100.0)
         self.assertIn('Pending Validation', snapshot['resilience']['score_status'])
+        self.assertEqual(snapshot['resilience']['coverage_pct'], 100)
+        self.assertEqual(snapshot['resilience']['missing_components'], [])
         self.assertFalse(snapshot['resilience']['components']['DER']['is_proxy'])
 
     def test_missing_metrics_score_none_and_unavailable(self):
@@ -185,6 +187,8 @@ class CompanySnapshotTests(TestCase):
 
         self.assertIsNotNone(snapshot['resilience']['score'])
         self.assertIn('partial evidence', snapshot['resilience']['score_status'].lower())
+        self.assertEqual(snapshot['resilience']['coverage_pct'], 75)
+        self.assertEqual(snapshot['resilience']['missing_components'], ['Sales Diversification HHI'])
         der = snapshot['resilience']['components']['DER']
         self.assertTrue(der['is_proxy'])
         self.assertIn('seeded', der['source'])

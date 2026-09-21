@@ -75,6 +75,7 @@ class ScenarioApiTests(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(ScenarioInput.objects.filter(scenario=self.scenario).count(), 1)
         result = ScenarioResult.objects.get(scenario=self.scenario)
-        self.assertEqual(result.estimated_price_impact_pct, 0)
+        self.assertIsNone(result.estimated_price_impact_pct)
+        self.assertIsNone(result.estimated_new_price)
         self.assertIn('Arithmetic preview', result.methodology)
         self.assertIn(str(metric.id), result.warnings + self.scenario.inputs.first().notes)
