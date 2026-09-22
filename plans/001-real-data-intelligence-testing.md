@@ -19,7 +19,7 @@
 - **Priority**: P1
 - **Effort**: L (2–4 focused backend days, excluding API-access delays)
 - **Risk**: MED — external response contracts and metric semantics must be verified
-- **Depends on**: none
+- **Depends on**: `plans/002-connect-data-dictionary-apis.md`
 - **Category**: direction, correctness, tests, docs
 - **Planned at**: commit `b84bc97`, 2026-09-21
 
@@ -412,4 +412,3 @@ Stop and report instead of improvising if:
   → parser → ingest → real-only evaluation sequence.
 - The next plan after this one should cover publication vintages and
   out-of-sample validation, not more scoring complexity.
-
