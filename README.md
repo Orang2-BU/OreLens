@@ -4,14 +4,14 @@ OreLens - Commodity and Company Intelligence Platform untuk Sectors Hackathon.
 
 OreLens membantu pengguna menelusuri driver komoditas, exposure dan resilience perusahaan, serta evidence dan scenario. Scope awal: Coal, Gold, Nickel, Copper. Sectors adalah sumber data inti yang direncanakan; metric dan sumber lain tercatat di [Data Dictionary](docs/data/DATA_DICTIONARY.md).
 
-Implementasi saat ini: Django/DRF + SQLite di backend, React/Vite di frontend. Arah arsitektur selanjutnya mencakup PostgreSQL dan DuckDB/Parquet untuk historical analytics; Next.js + TypeScript masih target, belum dipakai. Lihat [Technical Architecture](docs/data/TECHNICAL_ARCHITECTURE.md).
+Implementasi saat ini: Django/DRF + SQLite di backend dan Next.js App Router + TypeScript di frontend. Arah arsitektur selanjutnya mencakup PostgreSQL dan DuckDB/Parquet untuk historical analytics. Lihat [Technical Architecture](docs/data/TECHNICAL_ARCHITECTURE.md).
 
 ## Structure
 
 ```
 OreLens/
 ├── backend/             # Django REST API
-├── frontend/            # React/Vite foundation (FE-01)
+├── frontend/            # Next.js app shell + Commodity Overview (FE-01/FE-02)
 └── docs/                # Product, data, intelligence, research
 ```
 
@@ -38,7 +38,7 @@ npm ci
 npm run dev
 ```
 
-Buka `http://127.0.0.1:5173/`. Backend dijalankan terpisah; `VITE_API_BASE_URL` dapat diatur sesuai [panduan frontend](frontend/README.md). Halaman analisis masih placeholder.
+Buka `http://127.0.0.1:3000/`. Backend dijalankan terpisah; `API_BASE_URL` dapat diatur sesuai [panduan frontend](frontend/README.md). Commodity Overview sudah tersedia; halaman lain masih placeholder.
 
 ## Dokumentasi tim
 

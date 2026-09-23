@@ -36,5 +36,6 @@ schema.yml
 
 # Frontend
 node_modules/
+.next/
 playwright-report/
 test-results/
