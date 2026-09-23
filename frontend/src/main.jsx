@@ -39,9 +39,9 @@ function Connection() {
   }
   return <section className="connection" aria-label="Koneksi data">
     <span className="eyebrow">KONEKSI DATA</span>
-    <p role="status">{({ idle: 'Belum diperiksa', loading: 'Memeriksa koneksi…', success: 'API dapat diakses', error: 'API belum dapat diakses' })[status]}</p>
+    <p className={`connection-status ${status}`} role="status"><span aria-hidden="true" />{({ idle: 'Belum diperiksa', loading: 'Memeriksa koneksi…', success: 'API dapat diakses', error: 'API belum dapat diakses' })[status]}</p>
     {status === 'error' && <p className="connection-help">Pastikan backend berjalan dan alamat API sudah sesuai.</p>}
-    <button onClick={check} disabled={status === 'loading'}>{status === 'error' ? 'Coba lagi' : 'Periksa koneksi'} <span aria-hidden="true">↗</span></button>
+    <button onClick={check} disabled={status === 'loading'}>{status === 'error' ? 'Coba lagi' : 'Periksa koneksi'}</button>
   </section>;
 }
 
@@ -60,7 +60,7 @@ function App() {
     <aside className="sidebar">
       <Link className="brand" to="/commodities" aria-label="OreLens beranda"><span className="brand-mark" aria-hidden="true">O</span>OreLens<span className="brand-dot">.</span></Link>
       <p className="brand-caption">Commodity & company intelligence</p>
-      <nav aria-label="Navigasi utama">{sections.map(s => <NavLink key={s.path} to={s.path}><span className="nav-index">{s.index}</span>{s.label}<span className="nav-arrow" aria-hidden="true">↗</span></NavLink>)}</nav>
+      <nav aria-label="Navigasi utama">{sections.map(s => <NavLink key={s.path} to={s.path}><span className="nav-index">{s.index}</span>{s.label}</NavLink>)}</nav>
       <Connection />
       <p className="sidebar-foot">Sectors Hackathon<br /><span>Research workspace</span></p>
     </aside>

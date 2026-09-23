@@ -1,6 +1,6 @@
 # OreLens frontend
 
-FE-01 foundation: React + Vite, responsive workspace, accessible navigation, route fallback, reusable loading/error/empty panel, and a manual API connection check. Product pages are explicitly marked as not implemented yet (FE-02 onward).
+FE-01 foundation: React + Vite, OreLens purple design tokens, responsive workspace, accessible navigation, route fallback, reusable loading/error/empty panel, and a manual API connection check. Product pages are explicitly marked as not implemented yet (FE-02 onward).
 
 ## Run
 
