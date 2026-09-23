@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import StatePanel from '../_components/StatePanel';
 import { getCommodityOverview } from '@/lib/api';
 import { buildSparkline } from '@/lib/market';
@@ -56,6 +57,7 @@ export default async function CommoditiesPage() {
                 {points ? <svg viewBox="0 0 320 80" role="img" aria-label={`Tren harga ${commodity.name} dari ${chronological.length} observasi`} preserveAspectRatio="none"><polyline points={points} /></svg> : <p className="trend-empty">{commodity.priceHistoryStatus === 'error' ? 'Riwayat gagal dimuat' : 'Riwayat belum tersedia'}</p>}
               </div>
               <footer><span>Sumber: {latest?.source || 'Belum tersedia'}</span><span>{formatDate(latest?.date || commodity.last_updated)}</span></footer>
+              <Link className="card-link" href={`/commodities/${commodity.code.toLowerCase()}`}>Buka driver map</Link>
             </article>
           );
         })}

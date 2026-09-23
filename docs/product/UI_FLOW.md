@@ -7,7 +7,7 @@ Commodity Overview → Commodity Driver Map → Company Comparison
 → Company Detail / Exposure & Resilience → Evidence View → Scenario UI
 ```
 
-Navigasi global tersedia di `/commodities`, `/companies`, `/evidence`, dan `/scenarios`. FE-02 mengimplementasikan Commodity Overview di `/commodities`; halaman lain masih placeholder untuk tahap berikutnya.
+Navigasi global tersedia di `/commodities`, `/companies`, `/evidence`, dan `/scenarios`. FE-02 mengimplementasikan Commodity Overview di `/commodities`; FE-03 mengimplementasikan Driver Map di `/commodities/{code}`. Halaman perusahaan, evidence, dan scenario masih placeholder.
 
 | View | Tujuan dan isi minimum | Endpoint terkait |
 |---|---|---|

@@ -45,6 +45,13 @@ function Connection() {
 export default function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const current = sections.find((section) => pathname.startsWith(section.path));
+  const main = useRef<HTMLElement | null>(null);
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (!firstRender.current) main.current?.focus();
+    firstRender.current = false;
+  }, [pathname]);
 
   return (
     <div className="app">
@@ -63,7 +70,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </aside>
       <div className="content">
         <header className="topbar"><span>OreLens / <strong>{current?.label || 'Workspace'}</strong></span><span className="badge">Preliminary intelligence</span></header>
-        <main id="main" tabIndex={-1}>{children}</main>
+        <main id="main" tabIndex={-1} ref={main}>{children}</main>
         <footer>OreLens <span>Komoditas. Perusahaan. Evidence.</span></footer>
       </div>
     </div>

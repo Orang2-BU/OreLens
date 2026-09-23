@@ -1,6 +1,6 @@
 # OreLens frontend
 
-Next.js App Router frontend. FE-01 provides the purple responsive app shell; FE-02 adds a server-rendered Commodity Overview with current prices, daily/YTD movement, historical sparklines, provenance labels, and explicit loading/error/empty states.
+Next.js App Router frontend. FE-01 provides the purple responsive app shell, FE-02 adds Commodity Overview, and FE-03 adds an evidence-first Commodity Driver Map with validation and quant-readiness context.
 
 ## Run
 
@@ -23,6 +23,6 @@ npm test
 npm run build
 ```
 
-Routes: `/commodities`, `/companies`, `/evidence`, `/scenarios`. `/` redirects to commodities; unknown routes use the App Router not-found page.
+Routes: `/commodities`, `/commodities/{code}`, `/companies`, `/evidence`, `/scenarios`. `/` redirects to commodities; unknown routes use the App Router not-found page.
 
-`lib/api.ts` preserves Django pagination and fetches data in Server Components. Commodity history failures stay visible per card while a commodities endpoint failure is handled by `app/commodities/error.tsx`.
+`lib/api.ts` preserves Django pagination and fetches data in Server Components. Driver Map combines intelligence, persisted direction, price history, and quant readiness in parallel after resolving the commodity.

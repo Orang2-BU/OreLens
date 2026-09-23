@@ -29,4 +29,4 @@ OreLens menghubungkan lingkungan komoditas dengan exposure, resilience, fundamen
 
 ## Kondisi repo saat ini
 
-Backend Django/DRF memiliki model, migration, endpoint baca, client sumber data dasar, dan seed demo. Frontend Next.js memiliki app shell FE-01 dan Commodity Overview FE-02; halaman perusahaan, evidence, dan scenario masih placeholder. Seed berisi nilai contoh, termasuk histori harga yang dibuat acak; nilainya bukan hasil audit. Scoring, pipeline normalisasi historis, dan scenario engine belum tervalidasi. PostgreSQL serta DuckDB/Parquet masih menjadi target lanjutan dari implementasi SQLite saat ini.
+Backend Django/DRF memiliki model, migration, endpoint baca, client sumber data dasar, dan seed demo. Frontend Next.js memiliki app shell FE-01, Commodity Overview FE-02, dan Commodity Driver Map FE-03; halaman perusahaan, evidence, dan scenario masih placeholder. Seed berisi nilai contoh, termasuk histori harga yang dibuat acak; nilainya bukan hasil audit. Scoring, pipeline normalisasi historis, dan scenario engine belum tervalidasi. PostgreSQL serta DuckDB/Parquet masih menjadi target lanjutan dari implementasi SQLite saat ini.

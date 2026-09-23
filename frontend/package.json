@@ -7,7 +7,7 @@
     "dev": "next dev --hostname 127.0.0.1",
     "build": "next build",
     "start": "next start --hostname 127.0.0.1",
-    "test": "node --test lib/market.test.js"
+    "test": "node --test lib/market.test.js lib/drivers.test.js"
   },
   "dependencies": {
     "next": "^16.3.6",
