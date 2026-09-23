@@ -1,6 +1,6 @@
 # OreLens frontend
 
-Next.js App Router frontend. FE-01 provides the purple responsive app shell, FE-02 adds Commodity Overview, FE-03 adds an evidence-first Commodity Driver Map, and FE-04 adds commodity peer Company Comparison.
+Next.js App Router frontend. FE-01 provides the purple responsive app shell, FE-02 adds Commodity Overview, FE-03 adds an evidence-first Commodity Driver Map, FE-04 adds commodity peer Company Comparison, and FE-05 adds Company Detail with metric-level evidence.
 
 ## Run
 
@@ -23,6 +23,6 @@ npm test
 npm run build
 ```
 
-Routes: `/commodities`, `/commodities/{code}`, `/companies`, `/evidence`, `/scenarios`. `/` redirects to commodities; unknown routes use the App Router not-found page.
+Routes: `/commodities`, `/commodities/{code}`, `/companies`, `/companies/{id}`, `/evidence`, `/scenarios`. `/` redirects to commodities; unknown company IDs use a scoped not-found page.
 
 `lib/api.ts` preserves Django pagination and fetches data in Server Components. Driver Map combines intelligence, persisted direction, price history, and quant readiness. Company Comparison resolves a commodity peer group, then loads each company's evidence-aware intelligence snapshot in parallel.

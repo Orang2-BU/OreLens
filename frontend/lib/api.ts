@@ -79,49 +79,71 @@ export type Company = {
   sub_industry: string;
   market_cap: string;
   currency: string;
+  country: string;
   exchange: string;
+  description: string;
+  website: string;
 };
 
-type CompanyExposure = {
+export type CompanyExposure = {
   company: number;
   commodity: number;
   commodity_code: string;
   revenue_share_pct: number | null;
+  production_volume: string | null;
+  production_unit: string;
+  cash_cost_per_unit: string | null;
+  notes: string;
 };
 
-type IntelligenceObservation = {
+export type IntelligenceObservation = {
   value: number | string;
   unit: string;
+  date: string | null;
   source: string;
   confidence: string;
+  is_proxy: boolean;
   evidence_id: number | null;
+  data_origin: string;
 };
 
 export type CompanyIntelligence = {
   data_mode: 'seed_demo' | 'mixed' | 'evidence_backed';
   exposure: {
+    status: string;
+    basis: string | null;
     score: number | null;
     score_status: string;
     analysis_confidence: string;
+    proxy_used: boolean;
     observation: IntelligenceObservation | null;
+    components: Record<string, IntelligenceObservation | null>;
   };
   resilience: {
+    status: string;
     raw_score: number | null;
     uncertainty_adjusted_score: number | null;
     score_status: string;
     coverage_pct: number;
     missing_components: string[];
     presentation: { uncertainty_level: string; warning: string | null };
+    components: Record<string, IntelligenceObservation | null>;
   };
   fundamentals: Record<string, IntelligenceObservation | null>;
 };
+
+class ApiError extends Error {
+  constructor(public status: number) {
+    super(`Django API gagal merespons (HTTP ${status}).`);
+  }
+}
 
 const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8000/api/v1/';
 
 export async function fetchApi<T>(path: string): Promise<T> {
   const url = new URL(path.replace(/^\/+/, ''), API_BASE_URL.replace(/\/?$/, '/'));
   const response = await fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } });
-  if (!response.ok) throw new Error(`Django API gagal merespons (HTTP ${response.status}).`);
+  if (!response.ok) throw new ApiError(response.status);
   return response.json() as Promise<T>;
 }
 
@@ -176,4 +198,23 @@ export async function getCompanyComparison(code: string) {
     intelligence: await fetchApi<CompanyIntelligence>(`companies/${company.id}/intelligence/?commodity=${commodity.code}`),
   })));
   return { commodity, commodities: commodityPage.results, rows };
+}
+
+export async function getCompanyDetail(id: string, code: string) {
+  const company = await fetchApi<Company>(`companies/${id}/`).catch((error) => {
+    if (error instanceof ApiError && error.status === 404) return null;
+    throw error;
+  });
+  if (!company) return null;
+
+  const [commodityPage, exposurePage] = await Promise.all([
+    fetchApi<Page<Commodity>>('commodities/'),
+    fetchApi<Page<CompanyExposure>>(`company-exposures/?company=${id}`),
+  ]);
+  const commodities = commodityPage.results.filter((item) => exposurePage.results.some((exposure) => exposure.commodity === item.id));
+  const commodity = pickCommodity(commodities, code);
+  const intelligence = commodity
+    ? await fetchApi<CompanyIntelligence>(`companies/${id}/intelligence/?commodity=${commodity.code}`)
+    : null;
+  return { company, commodity, commodities, exposures: exposurePage.results, intelligence };
 }

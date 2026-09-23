@@ -165,6 +165,8 @@ dd { margin: 0; font-weight: 650; text-align: right; }
 .comparison-table tbody th strong, .comparison-table tbody th span, .comparison-table tbody th small { display: block; }
 .comparison-table tbody th strong { color: var(--primary); font-size: 15px; }
 .comparison-table tbody th span { margin: 5px 0 10px; font-size: 12px; line-height: 1.4; }
+.company-link { display: inline-flex; min-height: 44px; flex-direction: column; justify-content: center; text-decoration: underline; text-decoration-color: #cdbbdd; text-underline-offset: 4px; }
+.company-link:hover { text-decoration-color: var(--primary); }
 .comparison-table small { margin-top: 9px; color: var(--muted); line-height: 1.5; }
 .score-value { display: inline-block; color: var(--primary); font-size: 25px; font-variant-numeric: tabular-nums; }
 .score-label { display: block; margin: 2px 0 12px; color: var(--muted); font-size: 9px; }
@@ -175,6 +177,48 @@ dd { margin: 0; font-weight: 650; text-align: right; }
 .mode-badge.mixed { border-color: #d8b978; background: #fbf3e3; color: #6a4917; }
 .mode-badge.evidence_backed { border-color: #8fbea5; background: #ecf7f1; color: var(--positive); }
 .skeleton-table { min-height: 330px; }
+
+.company-detail-heading { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, .7fr); gap: 48px; align-items: end; margin-bottom: 28px; }
+.company-detail-heading h1 { margin-bottom: 3px; }
+.company-detail-heading h2 { margin: 0; font-size: 20px; font-weight: 560; }
+.company-detail-heading p { max-width: 720px; margin: 18px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+.company-profile { margin: 0; border-top: 1px solid var(--border); }
+.company-profile div { display: flex; justify-content: space-between; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 11px; }
+.company-exposure-switcher { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 24px; }
+.company-exposure-switcher a { min-height: 62px; padding: 11px 13px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); display: flex; flex-direction: column; justify-content: center; gap: 4px; }
+.company-exposure-switcher a span { font-size: 11px; }
+.company-exposure-switcher a strong { color: var(--muted); font-size: 9px; }
+.company-exposure-switcher a:hover { border-color: #aa91be; }
+.company-exposure-switcher a[aria-current="page"] { border-color: var(--primary); background: var(--primary); color: #fff; }
+.company-exposure-switcher a[aria-current="page"] strong { color: #d9c8e7; }
+.score-overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-bottom: 42px; }
+.score-panel { padding: 22px; border: 1px solid var(--border); border-top: 3px solid var(--accent); border-radius: 6px; background: var(--surface); }
+.score-panel > span { color: var(--primary); font-size: 9px; font-weight: 800; letter-spacing: 1.2px; }
+.score-panel > strong { display: inline-block; margin: 18px 7px 16px 0; color: var(--primary); font-size: 38px; font-variant-numeric: tabular-nums; }
+.score-panel > small { color: var(--muted); font-size: 9px; }
+.score-panel dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; }
+.score-panel dl div { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 10px; }
+.breakdown-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+.section-heading { display: flex; gap: 14px; min-height: 76px; margin-bottom: 12px; }
+.section-heading > span { color: var(--accent); font-size: 10px; font-weight: 800; }
+.section-heading h2 { margin: 0 0 6px; font-size: 19px; }
+.section-heading p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
+.metric-list { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
+.metric-row { display: grid; grid-template-columns: minmax(170px, 1.3fr) minmax(90px, .55fr) minmax(140px, 1fr); gap: 16px; padding: 16px; border-bottom: 1px solid var(--border); align-items: center; }
+.metric-row:last-child { border-bottom: 0; }
+.metric-row h3 { margin: 0 0 5px; font-size: 12px; }
+.metric-row p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.5; }
+.metric-value strong, .metric-value span { display: block; }
+.metric-value strong { color: var(--primary); font-size: 17px; font-variant-numeric: tabular-nums; }
+.metric-value span { color: var(--muted); font-size: 9px; }
+.metric-evidence { display: flex; flex-wrap: wrap; gap: 4px; }
+.metric-evidence span { padding: 4px 6px; border: 1px solid #d9cce5; border-radius: 3px; color: #594567; font-size: 8px; }
+.metric-row.unavailable { background: #faf9fb; }
+.metric-row.unavailable .metric-value strong { color: var(--muted); font-size: 11px; }
+.fundamentals-section { margin-top: 42px; }
+.fundamentals-section .metric-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fundamentals-section .metric-row:nth-last-child(2) { border-bottom: 0; }
+.fundamentals-section .metric-row:nth-child(odd) { border-right: 1px solid var(--border); }
 
 .state-panel { min-height: 280px; padding: 42px 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .state-symbol { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #d8cae6; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 21px; }
@@ -201,6 +245,11 @@ footer { padding: 20px 48px; border-top: 1px solid var(--border); color: var(--m
   .commodity-grid { grid-template-columns: 1fr; }
   .driver-grid, .driver-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .price-context { grid-column: 1 / -1; }
+  .company-detail-heading, .breakdown-grid { grid-template-columns: 1fr; }
+  .company-exposure-switcher { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fundamentals-section .metric-list { grid-template-columns: 1fr; }
+  .fundamentals-section .metric-row:nth-last-child(2) { border-bottom: 1px solid var(--border); }
+  .fundamentals-section .metric-row:nth-child(odd) { border-right: 0; }
 }
 
 @media (max-width: 760px) {
@@ -220,6 +269,9 @@ footer { padding: 20px 48px; border-top: 1px solid var(--border); color: var(--m
   .driver-grid, .driver-summary { grid-template-columns: 1fr; }
   .price-context { grid-column: auto; }
   .driver-card h2, .driver-description { min-height: 0; }
+  .score-overview { grid-template-columns: 1fr; }
+  .score-panel dl { grid-template-columns: 1fr; }
+  .metric-row { grid-template-columns: 1fr; gap: 10px; }
   footer { padding: 20px; flex-wrap: wrap; }
 }
 
