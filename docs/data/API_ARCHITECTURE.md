@@ -44,7 +44,7 @@ Base path: `/api/v1/`. Endpoint berikut berbentuk read-only dan mengembalikan de
 | Scenario | `scenarios/` | `commodity`, `status`; detail memuat inputs/result |
 | Scenario input/result | `scenario-inputs/`, `scenario-results/` | Input dapat difilter `scenario`; result belum |
 
-`raw-data-logs/` juga ada, tetapi raw payload tidak menjadi kontrak UI publik sebelum sanitasi dan kontrol akses. Detail ID tersedia pada setiap resource. Schema aktual dapat dibuka di `/api/schema/`.
+`raw-data-logs/` juga ada, tetapi raw payload tidak menjadi kontrak UI publik sebelum sanitasi dan kontrol akses. FE-06 hanya merender allowlist metadata provenance (`source`, `endpoint`, `status_code`, `data_origin`, `fetched_at`); payload dan request parameters tetap tidak ditampilkan. Detail ID tersedia pada setiap resource. Schema aktual dapat dibuka di `/api/schema/`.
 
 ## Gap kontrak yang perlu diselesaikan
 

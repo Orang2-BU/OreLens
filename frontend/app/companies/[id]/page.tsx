@@ -23,7 +23,7 @@ function MetricList({ metrics }: { metrics: Record<string, IntelligenceObservati
         <article className={`metric-row ${observation ? '' : 'unavailable'}`} key={name}>
           <div><h3>{name}</h3>{observation ? <p>{observation.source} · {formatDate(observation.date)}</p> : <p>Belum ada normalized observation.</p>}</div>
           <div className="metric-value">{observation ? <><strong>{formatNumber(observation.value)}</strong><span>{observation.unit || 'unitless'}</span></> : <strong>Unavailable</strong>}</div>
-          <div className="metric-evidence">{observation ? <><span>Confidence: {observation.confidence}</span><span>{observation.is_proxy ? 'Proxy metric' : 'Direct metric'}</span><span>{observation.evidence_id ? `Evidence #${observation.evidence_id}` : 'No evidence ID'}</span></> : <span>Missing, bukan nol</span>}</div>
+          <div className="metric-evidence">{observation ? <><span>Confidence: {observation.confidence}</span><span>{observation.is_proxy ? 'Proxy metric' : 'Direct metric'}</span>{observation.evidence_id ? <Link className="evidence-link" href={`/evidence?metric_id=${observation.evidence_id}`}>Evidence #{observation.evidence_id}</Link> : <span>No evidence ID</span>}</> : <span>Missing, bukan nol</span>}</div>
         </article>
       ))}
     </div>

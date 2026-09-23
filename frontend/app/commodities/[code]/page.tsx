@@ -74,7 +74,7 @@ export default async function CommodityDriverPage({ params }: { params: Promise<
                   <span>LATEST OBSERVATION</span>
                   <strong>{formatValue(driver.latest.value)} <small>{driver.latest.unit}</small></strong>
                   <p>{driver.latest.source} · {formatDate(driver.latest.date)}</p>
-                  <div className="evidence-tags"><span>Confidence: {driver.latest.confidence}</span><span>{driver.latest.is_proxy ? 'Proxy' : 'Direct metric'}</span><span>Evidence #{driver.latest.evidence_id}</span></div>
+                  <div className="evidence-tags"><span>Confidence: {driver.latest.confidence}</span><span>{driver.latest.is_proxy ? 'Proxy' : 'Direct metric'}</span><Link className="evidence-link" href={`/evidence?metric_id=${driver.latest.evidence_id}`}>Evidence #{driver.latest.evidence_id}</Link></div>
                 </div>
               ) : <div className="driver-unavailable"><strong>Evidence belum tersedia</strong><p>Tidak ada normalized observation dengan raw log HTTP 200.</p></div>}
 

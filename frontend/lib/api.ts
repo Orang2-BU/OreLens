@@ -1,5 +1,6 @@
 import { enrichDrivers } from './drivers.js';
 import { buildCompanyPeers, pickCommodity } from './company.js';
+import { buildEvidenceQuery } from './evidence.js';
 
 export type Commodity = {
   id: number;
@@ -69,7 +70,53 @@ export type QuantReadiness = {
   note: string;
 };
 
-type Page<T> = { count: number; results: T[] };
+type Page<T> = { count: number; next?: string | null; previous?: string | null; results: T[] };
+
+export type NormalizedMetric = {
+  id: number;
+  metric_name: string;
+  definition: string;
+  entity_type: 'Commodity' | 'Company' | 'Macro';
+  entity_id: string;
+  commodity: number | null;
+  source: string;
+  frequency: string;
+  unit: string;
+  original_unit: string;
+  transformation: string;
+  priority: 'High' | 'Medium' | 'Low';
+  confidence: 'High' | 'Medium' | 'Low';
+  is_proxy: boolean;
+  proxy_description: string;
+  observation_date: string;
+  value: string;
+  raw_data_ref: number | null;
+};
+
+export type RawDataLog = {
+  id: number;
+  source: string;
+  endpoint: string;
+  status_code: number;
+  data_origin: 'live_api' | 'imported_file' | 'derived' | 'seed_demo';
+  fetched_at: string;
+};
+
+export type DataAuditItem = {
+  id: number;
+  metric: string;
+  available: 'Yes' | 'No' | 'Partial';
+  source: string;
+  endpoint: string;
+  earliest_date: string | null;
+  latest_date: string | null;
+  frequency: string;
+  unit: string;
+  missing_values: string;
+  historical_depth: string;
+  proxy_required: boolean;
+  notes: string;
+};
 
 export type Company = {
   id: number;
@@ -217,4 +264,31 @@ export async function getCompanyDetail(id: string, code: string) {
     ? await fetchApi<CompanyIntelligence>(`companies/${id}/intelligence/?commodity=${commodity.code}`)
     : null;
   return { company, commodity, commodities, exposures: exposurePage.results, intelligence };
+}
+
+export type EvidenceFilters = { entityType?: string; confidence?: string; search?: string; page?: string; metricId?: string };
+
+export async function getEvidenceView(filters: EvidenceFilters) {
+  const metricId = /^\d+$/.test(filters.metricId || '') ? filters.metricId : null;
+  const metricsRequest: Promise<Page<NormalizedMetric>> = metricId
+    ? fetchApi<NormalizedMetric>(`normalized-metrics/${metricId}/`)
+        .then((metric) => ({ count: 1, results: [metric] }))
+        .catch((error) => {
+          if (error instanceof ApiError && error.status === 404) return { count: 0, results: [] };
+          throw error;
+        })
+    : fetchApi<Page<NormalizedMetric>>(`normalized-metrics/?${buildEvidenceQuery(filters)}`);
+
+  // ponytail: current raw-log and audit volumes fit one 50-row page; follow pagination when either count exceeds 50.
+  const [metrics, rawLogs, audits] = await Promise.all([
+    metricsRequest,
+    fetchApi<Page<RawDataLog>>('raw-data-logs/'),
+    fetchApi<Page<DataAuditItem>>('data-audit/'),
+  ]);
+  return {
+    metrics,
+    audits,
+    rawLogs: Object.fromEntries(rawLogs.results.map((log) => [log.id, log])),
+    selectedMetricId: metricId,
+  };
 }
