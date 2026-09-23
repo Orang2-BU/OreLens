@@ -1,4 +1,5 @@
 import { enrichDrivers } from './drivers.js';
+import { buildCompanyPeers, pickCommodity } from './company.js';
 
 export type Commodity = {
   id: number;
@@ -70,6 +71,51 @@ export type QuantReadiness = {
 
 type Page<T> = { count: number; results: T[] };
 
+export type Company = {
+  id: number;
+  ticker: string;
+  name: string;
+  sector: string;
+  sub_industry: string;
+  market_cap: string;
+  currency: string;
+  exchange: string;
+};
+
+type CompanyExposure = {
+  company: number;
+  commodity: number;
+  commodity_code: string;
+  revenue_share_pct: number | null;
+};
+
+type IntelligenceObservation = {
+  value: number | string;
+  unit: string;
+  source: string;
+  confidence: string;
+  evidence_id: number | null;
+};
+
+export type CompanyIntelligence = {
+  data_mode: 'seed_demo' | 'mixed' | 'evidence_backed';
+  exposure: {
+    score: number | null;
+    score_status: string;
+    analysis_confidence: string;
+    observation: IntelligenceObservation | null;
+  };
+  resilience: {
+    raw_score: number | null;
+    uncertainty_adjusted_score: number | null;
+    score_status: string;
+    coverage_pct: number;
+    missing_components: string[];
+    presentation: { uncertainty_level: string; warning: string | null };
+  };
+  fundamentals: Record<string, IntelligenceObservation | null>;
+};
+
 const API_BASE_URL = process.env.API_BASE_URL || 'http://127.0.0.1:8000/api/v1/';
 
 export async function fetchApi<T>(path: string): Promise<T> {
@@ -112,4 +158,22 @@ export async function getCommodityDriverMap(code: string) {
       drivers: enrichDrivers(map.drivers, persisted.results),
     },
   };
+}
+
+export async function getCompanyComparison(code: string) {
+  const [commodityPage, companyPage, exposurePage] = await Promise.all([
+    fetchApi<Page<Commodity>>('commodities/'),
+    fetchApi<Page<Company>>('companies/'),
+    fetchApi<Page<CompanyExposure>>('company-exposures/'),
+  ]);
+  const commodity = pickCommodity(commodityPage.results, code);
+  if (!commodity) return null;
+
+  const peers = buildCompanyPeers(companyPage.results, exposurePage.results, commodity.id);
+  const rows = await Promise.all(peers.map(async ({ company, exposure }) => ({
+    company,
+    exposure,
+    intelligence: await fetchApi<CompanyIntelligence>(`companies/${company.id}/intelligence/?commodity=${commodity.code}`),
+  })));
+  return { commodity, commodities: commodityPage.results, rows };
 }

@@ -152,6 +152,30 @@ dd { margin: 0; font-weight: 650; text-align: right; }
 .event-policy strong { margin-top: 5px; font-size: 13px; }
 .event-policy p { margin: 0; color: var(--muted); font-size: 11px; line-height: 1.6; }
 
+.company-heading { display: flex; align-items: end; justify-content: space-between; gap: 32px; margin-bottom: 28px; }
+.company-heading p { max-width: 700px; margin-bottom: 0; color: var(--muted); font-size: 15px; line-height: 1.75; }
+.single-peer-note { margin: 0 0 12px; padding: 12px 14px; border-left: 3px solid #8a5c17; background: #f8f1e5; color: #6a4917; font-size: 12px; }
+.comparison-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); box-shadow: 0 12px 32px rgb(43 18 71 / 4%); }
+.comparison-wrap:focus-visible { outline-offset: 4px; }
+.comparison-table { width: 100%; min-width: 990px; border-collapse: collapse; font-size: 11px; }
+.comparison-table th, .comparison-table td { padding: 18px; border-bottom: 1px solid var(--border); vertical-align: top; text-align: left; }
+.comparison-table thead th { background: #f3eff6; color: var(--primary); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; }
+.comparison-table tbody tr:last-child > * { border-bottom: 0; }
+.comparison-table tbody th { width: 210px; }
+.comparison-table tbody th strong, .comparison-table tbody th span, .comparison-table tbody th small { display: block; }
+.comparison-table tbody th strong { color: var(--primary); font-size: 15px; }
+.comparison-table tbody th span { margin: 5px 0 10px; font-size: 12px; line-height: 1.4; }
+.comparison-table small { margin-top: 9px; color: var(--muted); line-height: 1.5; }
+.score-value { display: inline-block; color: var(--primary); font-size: 25px; font-variant-numeric: tabular-nums; }
+.score-label { display: block; margin: 2px 0 12px; color: var(--muted); font-size: 9px; }
+.comparison-table dl { min-width: 140px; margin: 0; }
+.comparison-table dl div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-top: 1px solid var(--border); }
+.mode-badge { display: inline-block; padding: 6px 8px; border: 1px solid var(--border); border-radius: 3px; font-size: 9px; font-weight: 800; text-transform: uppercase; }
+.mode-badge.seed_demo { border-color: #d6c6e3; background: var(--primary-soft); color: var(--primary); }
+.mode-badge.mixed { border-color: #d8b978; background: #fbf3e3; color: #6a4917; }
+.mode-badge.evidence_backed { border-color: #8fbea5; background: #ecf7f1; color: var(--positive); }
+.skeleton-table { min-height: 330px; }
+
 .state-panel { min-height: 280px; padding: 42px 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .state-symbol { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid #d8cae6; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 21px; }
 .state-panel h1, .state-panel h2 { margin: 20px 0 10px; font-size: 20px; font-weight: 560; letter-spacing: -.3px; }
@@ -189,7 +213,7 @@ footer { padding: 20px 48px; border-top: 1px solid var(--border); color: var(--m
   .sidebar-foot { display: none; }
   .topbar { min-height: 64px; padding: 16px 20px; flex-wrap: wrap; }
   main { padding: 32px 20px; }
-  .overview-heading, .driver-heading, .data-notice, .scope, .note, .event-policy { align-items: flex-start; flex-direction: column; gap: 8px; }
+  .overview-heading, .driver-heading, .company-heading, .data-notice, .scope, .note, .event-policy { align-items: flex-start; flex-direction: column; gap: 8px; }
   .overview-heading p, .page-heading p { font-size: 16px; }
   .coverage { width: 100%; padding: 14px 0 0; border-top: 1px solid var(--border); border-left: 0; }
   .commodity-card { padding: 20px; }

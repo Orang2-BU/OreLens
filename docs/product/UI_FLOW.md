@@ -7,13 +7,13 @@ Commodity Overview → Commodity Driver Map → Company Comparison
 → Company Detail / Exposure & Resilience → Evidence View → Scenario UI
 ```
 
-Navigasi global tersedia di `/commodities`, `/companies`, `/evidence`, dan `/scenarios`. FE-02 mengimplementasikan Commodity Overview di `/commodities`; FE-03 mengimplementasikan Driver Map di `/commodities/{code}`. Halaman perusahaan, evidence, dan scenario masih placeholder.
+Navigasi global tersedia di `/commodities`, `/companies`, `/evidence`, dan `/scenarios`. FE-02 mengimplementasikan Commodity Overview di `/commodities`; FE-03 mengimplementasikan Driver Map di `/commodities/{code}`; FE-04 mengimplementasikan Company Comparison di `/companies?commodity={code}`. Company Detail, evidence, dan scenario masih placeholder.
 
 | View | Tujuan dan isi minimum | Endpoint terkait |
 |---|---|---|
 | Commodity Overview | Empat komoditas; harga, unit, perubahan, tanggal data, status demo/aktual | `commodities/` |
 | Commodity Driver Map | Driver supply/demand/structural/macro/event, arah, confidence, evidence; seri harga | `commodity-drivers/`, `commodity-prices/` |
-| Company Comparison | Pilih perusahaan dalam peer group komoditas sama; lihat exposure dan resilience terpisah | `companies/`, `company-exposures/`, `company-resilience/` |
+| Company Comparison | Pilih peer group komoditas sama; lihat exposure, uncertainty-adjusted resilience, fundamentals ringkas, coverage, dan status evidence secara terpisah | `companies/`, `company-exposures/`, `companies/{id}/intelligence/` |
 | Company Detail | Identitas, operasi, exposure per komoditas, fundamentals dan resilience | `companies/{id}/` serta endpoint terkait |
 | Exposure/Resilience breakdown | Nilai, definisi, periode, unit, source, confidence; missing tetap missing | Endpoint exposure/resilience dan normalized metric |
 | Evidence View | Jejak metric → raw source, transformasi, confidence/proxy, status audit | `normalized-metrics/`, `data-audit/` |

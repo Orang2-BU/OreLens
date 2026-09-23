@@ -11,7 +11,7 @@ Implementasi saat ini: Django/DRF + SQLite di backend dan Next.js App Router + T
 ```
 OreLens/
 ├── backend/             # Django REST API
-├── frontend/            # Next.js shell, Commodity Overview, Driver Map (FE-01–FE-03)
+├── frontend/            # Next.js shell, commodity views, Company Comparison (FE-01–FE-04)
 └── docs/                # Product, data, intelligence, research
 ```
 
@@ -38,7 +38,7 @@ npm ci
 npm run dev
 ```
 
-Buka `http://127.0.0.1:3000/`. Backend dijalankan terpisah; `API_BASE_URL` dapat diatur sesuai [panduan frontend](frontend/README.md). Commodity Overview dan Driver Map sudah tersedia; halaman perusahaan, evidence, dan scenario masih placeholder.
+Buka `http://127.0.0.1:3000/`. Backend dijalankan terpisah; `API_BASE_URL` dapat diatur sesuai [panduan frontend](frontend/README.md). Commodity Overview, Driver Map, dan Company Comparison sudah tersedia; Company Detail, evidence, dan scenario masih placeholder.
 
 ## Dokumentasi tim
 
